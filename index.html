@@ -10,7 +10,7 @@
     <script>
       async function testVimeo() {
         try {
-          const response = await fetch("/users/244943635/items?per_page=4&fields=type,video.id,video.name,video.uri,video.last_user_action_event_date,video.link,video.review_page.link,video.pictures,video.metadata.interactions.edit,video.manage_link,video.privacy.view,meta,folder.name,folder.uri,folder.last_user_action_event_date,folder.metadata.connections.items.uri,folder.metadata.connections.items.total,email&sort=last_user_action_event_date", {
+          const response = await fetch("https://api.vimeo.com/users/244943635/items?per_page=4&fields=type,video.id,video.name,video.uri,video.last_user_action_event_date,video.link,video.review_page.link,video.pictures,video.metadata.interactions.edit,video.manage_link,video.privacy.view,meta,folder.name,folder.uri,folder.last_user_action_event_date,folder.metadata.connections.items.uri,folder.metadata.connections.items.total,email&sort=last_user_action_event_date", {
             credentials: "include" // send cookies/JWT automatically
           });
 
