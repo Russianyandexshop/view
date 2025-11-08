@@ -1,595 +1,787 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>macOS System Integration & File Access Tests</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Control Hover Interface</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #5f2c82, #49a09d);
-            color: white;
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --siri-purple: #8a4fff;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #6b7280;
+            --transition: all 0.3s ease;
+        }
+
+        * {
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         }
-        .system-test {
-            background: rgba(255,255,255,0.1);
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             padding: 30px;
-            margin: 20px auto;
-            border-radius: 20px;
-            max-width: 800px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 30px;
+            transition: var(--transition);
         }
-        .integration-method {
-            background: rgba(0,0,0,0.3);
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 10px;
-            border-left: 4px solid #007AFF;
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
         }
-        .file-access-method {
-            background: rgba(0,0,0,0.3);
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 10px;
-            border-left: 4px solid #FF6B6B;
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .test-btn {
-            background: #007AFF;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            margin: 5px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+
+        .siri-title {
+            color: var(--siri-purple);
         }
-        .test-btn:hover {
-            background: #0056CC;
-            transform: translateY(-2px);
-        }
-        .file-btn {
-            background: #FF6B6B;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            margin: 5px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .file-btn:hover {
-            background: #FF5252;
-            transform: translateY(-2px);
-        }
-        .status {
-            font-family: 'Monaco', monospace;
-            background: rgba(0,0,0,0.5);
+
+        .status-bar {
+            background: rgba(0, 0, 0, 0.05);
             padding: 15px;
-            border-radius: 8px;
-            margin: 10px 0;
-            max-height: 300px;
-            overflow-y: auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
         }
-        .success { color: #00ff88; }
-        .error { color: #ff4444; }
-        .info { color: #007AFF; }
-        .warning { color: #ffaa00; }
-        .file-item { color: #FF6B6B; }
-        
-        .file-grid {
+
+        .status-bar.success {
+            border-left-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .status-bar.warning {
+            border-left-color: var(--warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .status-bar.error {
+            border-left-color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .status-bar.siri {
+            border-left-color: var(--siri-purple);
+            background: rgba(138, 79, 255, 0.1);
+        }
+
+        .command-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+            gap: 20px;
+            margin-top: 20px;
         }
-        
-        .file-card {
-            background: rgba(255,255,255,0.1);
+
+        .command-card {
+            background: white;
+            border-radius: 12px;
             padding: 20px;
-            border-radius: 10px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             border: 2px solid transparent;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
-        
-        .file-card:hover {
-            background: rgba(255,107,107,0.2);
-            border-color: #FF6B6B;
+
+        .command-card:hover {
+            background: rgba(99, 102, 241, 0.05);
+            border-color: var(--primary);
             transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
         }
-        
-        .file-icon {
-            font-size: 2rem;
+
+        .command-card.siri:hover {
+            background: rgba(138, 79, 255, 0.05);
+            border-color: var(--siri-purple);
+        }
+
+        .command-card.active {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .command-card.siri.active {
+            background: rgba(138, 79, 255, 0.1);
+            border-color: var(--siri-purple);
+            box-shadow: 0 0 0 3px rgba(138, 79, 255, 0.2);
+        }
+
+        .command-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .command-text {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .command-desc {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-siri {
+            background: var(--siri-purple);
+            color: white;
+        }
+
+        .btn-siri:hover {
+            background: #7a3fe4;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .voice-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin: 20px 0;
+            height: 60px;
+            align-items: center;
+        }
+
+        .voice-bar {
+            width: 6px;
+            height: 20px;
+            background: var(--success);
+            border-radius: 3px;
+            transition: var(--transition);
+        }
+
+        .siri .voice-bar {
+            background: var(--siri-purple);
+        }
+
+        .speaking .voice-bar {
+            animation: voicePulse 0.6s ease-in-out infinite;
+        }
+
+        @keyframes voicePulse {
+            0%, 100% { transform: scaleY(1); opacity: 0.7; }
+            50% { transform: scaleY(2.5); opacity: 1; }
+        }
+
+        .siri-speaking .voice-bar {
+            animation: siriPulse 0.8s ease-in-out infinite;
+        }
+
+        @keyframes siriPulse {
+            0%, 100% { transform: scaleY(1); opacity: 0.7; background: var(--siri-purple); }
+            50% { transform: scaleY(3); opacity: 1; background: #a87bff; }
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 30px;
+        }
+
+        .instructions h3 {
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+        }
+
+        .instructions li {
             margin-bottom: 10px;
         }
-        
-        .security-warning {
-            background: rgba(255,0,0,0.2);
-            border: 1px solid #ff4444;
-            padding: 15px;
+
+        .siri-commands {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+
+        .siri-commands li {
+            margin-bottom: 8px;
+            color: var(--siri-purple);
+            font-weight: 500;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: white;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .custom-command {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .custom-command input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
             border-radius: 8px;
-            margin: 15px 0;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .command-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .custom-command {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="system-test">
-        <h1>🍎 macOS System Integration & File Access Tests</h1>
-        <p>Testing various methods to integrate with macOS and access system files</p>
-        
-        <div class="security-warning">
-            <h3>⚠️ Security Notice</h3>
-            <p>Modern browsers restrict direct file system access for security reasons. These tests explore potential methods but most will fail due to browser security policies.</p>
+    <div class="container">
+        <header>
+            <h1>🎤 Voice Control Hover Interface</h1>
+            <p class="subtitle">Hover over commands to speak them - macOS Voice Control will execute them</p>
+        </header>
+
+        <div class="card">
+            <h2 class="card-title">🔧 Setup & Status</h2>
+            <div class="status-bar" id="status">
+                🔴 Make sure Voice Control is enabled in System Preferences → Accessibility
+            </div>
+
+            <div class="voice-indicator" id="voiceIndicator">
+                <div class="voice-bar" style="animation-delay: 0s"></div>
+                <div class="voice-bar" style="animation-delay: 0.1s"></div>
+                <div class="voice-bar" style="animation-delay: 0.2s"></div>
+                <div class="voice-bar" style="animation-delay: 0.3s"></div>
+                <div class="voice-bar" style="animation-delay: 0.4s"></div>
+                <div class="voice-bar" style="animation-delay: 0.5s"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" onclick="enableVoiceControl()">
+                    <span>🔧</span> Enable Voice Control
+                </button>
+                <button class="btn btn-secondary" onclick="testAllCommands()">
+                    <span>🧪</span> Test All Commands
+                </button>
+                <button class="btn btn-siri" onclick="testSiriSequence()">
+                    <span>🌟</span> Test Siri Sequence
+                </button>
+                <button class="btn btn-secondary" onclick="stopSpeaking()">
+                    <span>⏹️</span> Stop Speaking
+                </button>
+            </div>
+
+            <div class="custom-command">
+                <input type="text" id="customCommand" placeholder="Enter custom command for Siri...">
+                <button class="btn btn-siri" onclick="speakCustomSiriCommand()">
+                    <span>🎤</span> Speak to Siri
+                </button>
+            </div>
         </div>
 
-        <div class="file-access-method">
-            <h3>📁 File System Access Tests</h3>
-            <p>Attempt to access system files and directories via mouseover</p>
-            
-            <div class="file-grid">
-                <div class="file-card" onmouseover="testFileAccess('/Applications/')">
-                    <div class="file-icon">📱</div>
-                    <div class="command-text">/Applications/</div>
-                    <div class="command-desc">Applications Folder</div>
+        <div class="card">
+            <h2 class="card-title">🚀 Application Commands</h2>
+            <div class="command-grid">
+                <div class="command-card" onmouseover="speakCommand('Open Siri')">
+                    <div class="command-icon">🌐</div>
+                    <div class="command-text">Open Siri</div>
+                    <div class="command-desc">Launches Siri</div>
                 </div>
-                
-                <div class="file-card" onmouseover="testFileAccess('/Users/')">
-                    <div class="file-icon">👤</div>
-                    <div class="command-text">/Users/</div>
-                    <div class="command-desc">Users Directory</div>
+                <div class="command-card" onmouseover="speakCommand('Start Listening')">
+                    <div class="command-icon">🧮</div>
+                    <div class="command-text">start listening</div>
+                    <div class="command-desc">starts listening</div>
                 </div>
-                
-                <div class="file-card" onmouseover="testFileAccess('/System/')">
-                    <div class="file-icon">⚙️</div>
-                    <div class="command-text">/System/</div>
-                    <div class="command-desc">System Folder</div>
+                <div class="command-card" onmouseover="speakCommand('Open Messages')">
+                    <div class="command-icon">💬</div>
+                    <div class="command-text">Open Messages</div>
+                    <div class="command-desc">Launches Messages app</div>
                 </div>
-                
-                <div class="file-card" onmouseover="testFileAccess('/Library/')">
-                    <div class="file-icon">📚</div>
-                    <div class="command-text">/Library/</div>
-                    <div class="command-desc">Library Directory</div>
+                <div class="command-card" onmouseover="speakCommand('Open Mail')">
+                    <div class="command-icon">📧</div>
+                    <div class="command-text">Open Mail</div>
+                    <div class="command-desc">Opens Mail application</div>
                 </div>
-                
-                <div class="file-card" onmouseover="testFileAccess('~/Desktop/')">
-                    <div class="file-icon">🖥️</div>
-                    <div class="command-text">~/Desktop/</div>
-                    <div class="command-desc">User Desktop</div>
+                <div class="command-card" onmouseover="speakCommand('Open Music')">
+                    <div class="command-icon">🎵</div>
+                    <div class="command-text">Open Music</div>
+                    <div class="command-desc">Launches Music app</div>
                 </div>
-                
-                <div class="file-card" onmouseover="testFileAccess('~/Documents/')">
-                    <div class="file-icon">📄</div>
-                    <div class="command-text">~/Documents/</div>
-                    <div class="command-desc">Documents Folder</div>
+                <div class="command-card" onmouseover="speakCommand('Open Photos')">
+                    <div class="command-icon">🖼️</div>
+                    <div class="command-text">Open Photos</div>
+                    <div class="command-desc">Opens Photos application</div>
                 </div>
             </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title siri-title">🌟 Siri Commands</h2>
+            <div class="command-grid">
+                <div class="command-card siri" onmouseover="speakSiriCommand('What is the weather today?')">
+                    <div class="command-icon">🌤️</div>
+                    <div class="command-text">Weather</div>
+                    <div class="command-desc">Ask Siri about the weather</div>
+                </div>
+                <div class="command-card siri" onmouseover="speakSiriCommand('Set a timer for 5 minutes')">
+                    <div class="command-icon">⏱️</div>
+                    <div class="command-text">5-Min Timer</div>
+                    <div class="command-desc">Set a 5-minute timer</div>
+                </div>
+                <div class="command-card siri" onmouseover="speakSiriCommand('What time is it?')">
+                    <div class="command-icon">🕒</div>
+                    <div class="command-text">Current Time</div>
+                    <div class="command-desc">Ask Siri for the time</div>
+                </div>
+                <div class="command-card siri" onmouseover="speakSiriCommand('Tell me a joke')">
+                    <div class="command-icon">😂</div>
+                    <div class="command-text">Tell a Joke</div>
+                    <div class="command-desc">Ask Siri for a joke</div>
+                </div>
+                <div class="command-card siri" onmouseover="speakSiriCommand('Remind me to call mom at 6 PM')">
+                    <div class="command-icon">📝</div>
+                    <div class="command-text">Set Reminder</div>
+                    <div class="command-desc">Create a reminder</div>
+                </div>
+                <div class="command-card siri" onmouseover="speakSiriCommand('Play some jazz music')">
+                    <div class="command-icon">🎷</div>
+                    <div class="command-text">Play Jazz</div>
+                    <div class="command-desc">Ask Siri to play jazz</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">⚙️ System Control Commands</h2>
+            <div class="command-grid">
+                <div class="command-card" onmouseover="speakCommand('Show Desktop')">
+                    <div class="command-icon">🖥️</div>
+                    <div class="command-text">Show Desktop</div>
+                    <div class="command-desc">Reveals the desktop</div>
+                </div>
+                <div class="command-card" onmouseover="speakCommand('Open Finder')">
+                    <div class="command-icon">📁</div>
+                    <div class="command-text">Open Finder</div>
+                    <div class="command-desc">Opens Finder window</div>
+                </div>
+                <div class="command-card" onmouseover="speakCommand('Lock Screen')">
+                    <div class="command-icon">🔒</div>
+                    <div class="command-text">Lock Screen</div>
+                    <div class="command-desc">Locks your Mac</div>
+                </div>
+                <div class="command-card" onmouseover="speakCommand('Volume Up')">
+                    <div class="command-icon">🔊</div>
+                    <div class="command-text">Volume Up</div>
+                    <div class="command-desc">Increases system volume</div>
+                </div>
+                <div class="command-card" onmouseover="speakCommand('Volume Down')">
+                    <div class="command-icon">🔉</div>
+                    <div class="command-text">Volume Down</div>
+                    <div class="command-desc">Decreases system volume</div>
+                </div>
+                <div class="command-card" onmouseover="speakCommand('Mute')">
+                    <div class="command-icon">🔇</div>
+                    <div class="command-text">Mute</div>
+                    <div class="command-desc">Mutes system audio</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 How to Use This Interface</h3>
+            <ol>
+                <li>Enable Voice Control in System Preferences → Accessibility → Voice Control</li>
+                <li>Make sure your microphone is working and volume is audible</li>
+                <li>Hover over any command card to speak it aloud</li>
+                <li>macOS Voice Control will hear and execute the command</li>
+                <li>For Siri commands: Opens Siri, waits 3 seconds, then speaks "Hey Siri" followed by your command</li>
+                <li>Use the "Test Siri Sequence" button to try a complete Siri interaction</li>
+            </ol>
             
-            <button class="file-btn" onmouseover="testAllFileAccess()">Test All File Paths</button>
-            <button class="file-btn" onclick="testFileAPIAccess()">Test File System API</button>
+            <h3>🎤 Siri Command Examples</h3>
+            <ul class="siri-commands">
+                <li>"What's the weather today?"</li>
+                <li>"Set a timer for 10 minutes"</li>
+                <li>"Remind me to call John at 5 PM"</li>
+                <li>"Play some relaxing music"</li>
+                <li>"How do I get to downtown?"</li>
+                <li>"What's 15% of $45?"</li>
+            </ul>
         </div>
 
-        <div class="file-access-method">
-            <h3>🔍 File URI Schemes</h3>
-            <p>Attempt to use file:// URI schemes to access local files</p>
-            <button class="file-btn" onmouseover="testFileURISchemes()">Test File URI Schemes</button>
-        </div>
-
-        <div class="file-access-method">
-            <h3>📄 File Content Reading</h3>
-            <p>Attempt to read file contents through various methods</p>
-            <button class="file-btn" onmouseover="testFileContentReading()">Test File Reading</button>
-            <button class="file-btn" onclick="simulateFileUpload()">Simulate File Upload</button>
-        </div>
-
-        <div class="integration-method">
-            <h3>🔧 System Integration</h3>
-            <p>Other system integration methods</p>
-            <button class="test-btn" onmouseover="testURISchemes()">Test URI Schemes</button>
-            <button class="test-btn" onmouseover="testAppleScriptSimulation()">Test AppleScript</button>
-            <button class="test-btn" onmouseover="testAccessibilityAPI()">Test Accessibility</button>
-            <button class="test-btn" onmouseover="testSpotlightIntegration()">Test Spotlight</button>
-        </div>
-
-        <div id="systemStatus" class="status">
-            Ready to test macOS system integration and file access...
-        </div>
+        <footer>
+            <p>Voice Control Hover Interface | Works with macOS Voice Control & Siri</p>
+        </footer>
     </div>
 
     <script>
-        function logSystem(message, type = 'info') {
-            const status = document.getElementById('systemStatus');
-            const entry = document.createElement('div');
-            entry.className = type;
-            entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
-            status.appendChild(entry);
-            status.scrollTop = status.scrollHeight;
-        }
+        let speechSynthesis = window.speechSynthesis;
+        let isSpeaking = false;
+        let lastCommandTime = 0;
+        const COMMAND_COOLDOWN = 2000; // 2 seconds between commands
 
-        async function establishHoverContext() {
-            for(let i = 0; i < 8; i++) {
-                const elem = document.createElement('div');
-                elem.style.cssText = 'position:absolute; left:-1000px; width:1px; height:1px;';
-                document.body.appendChild(elem);
-                elem.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
-                await new Promise(r => setTimeout(r, 1));
-                elem.remove();
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            
+            // Remove existing classes
+            status.className = 'status-bar';
+            
+            // Add appropriate class based on type
+            if (type === 'success') {
+                status.classList.add('success');
+            } else if (type === 'warning') {
+                status.classList.add('warning');
+            } else if (type === 'error') {
+                status.classList.add('error');
+            } else if (type === 'siri') {
+                status.classList.add('siri');
             }
         }
 
-        async function testFileAccess(filePath) {
-            logSystem(`Attempting to access: ${filePath}`, "file-item");
-            await establishHoverContext();
+        function speakCommand(command) {
+            // Prevent rapid-fire commands
+            const now = Date.now();
+            if (now - lastCommandTime < COMMAND_COOLDOWN) {
+                return;
+            }
+            lastCommandTime = now;
+
+            if (!speechSynthesis) {
+                updateStatus('❌ Speech synthesis not supported in this browser', 'error');
+                return;
+            }
+
+            if (isSpeaking) {
+                speechSynthesis.cancel(); // Stop current speech
+            }
+
+            updateStatus(`🎤 Speaking: "${command}"`, 'success');
+
+            // Show speaking animation
+            const indicator = document.getElementById('voiceIndicator');
+            indicator.classList.add('speaking');
+
+            const utterance = new SpeechSynthesisUtterance(command);
             
-            try {
-                // Method 1: Direct file:// URL
-                try {
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = `file://${filePath}`;
-                    document.body.appendChild(iframe);
+            // Configure for clear voice command recognition
+            utterance.rate = 0.85; // Slower for better recognition
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            utterance.lang = 'en-US';
+
+            // Use a clear, robotic voice for better Voice Control recognition
+            const voices = speechSynthesis.getVoices();
+            const commandVoice = voices.find(voice => 
+                voice.name.includes('Alex') || 
+                voice.name.includes('Samantha') ||
+                voice.name.includes('Victoria') ||
+                voice.lang === 'en-US'
+            );
+
+            if (commandVoice) {
+                utterance.voice = commandVoice;
+            }
+
+            utterance.onstart = function() {
+                isSpeaking = true;
+                updateStatus(`🔊 Speaking: "${command}" - Voice Control should execute this`, 'success');
+                
+                // Highlight the active command card
+                highlightCommandCard(command);
+            };
+
+            utterance.onend = function() {
+                isSpeaking = false;
+                indicator.classList.remove('speaking');
+                updateStatus(`✅ Command spoken: "${command}" - Check if Voice Control executed it`, 'success');
+            };
+
+            utterance.onerror = function(event) {
+                isSpeaking = false;
+                indicator.classList.remove('speaking');
+                updateStatus(`❌ Error speaking command: ${event.error}`, 'error');
+            };
+
+            speechSynthesis.speak(utterance);
+        }
+
+        function speakSiriCommand(siriCommand) {
+            if (!speechSynthesis) {
+                updateStatus('❌ Speech synthesis not supported in this browser', 'error');
+                return;
+            }
+
+            if (isSpeaking) {
+                speechSynthesis.cancel();
+            }
+
+            updateStatus(`🌟 Starting Siri sequence...`, 'siri');
+
+            // Show Siri speaking animation
+            const indicator = document.getElementById('voiceIndicator');
+            indicator.classList.add('siri', 'siri-speaking');
+
+            // Step 1: Open Siri
+            updateStatus(`🎤 Step 1: Opening Siri...`, 'siri');
+            
+            const openSiriUtterance = new SpeechSynthesisUtterance("Open Siri");
+            openSiriUtterance.rate = 0.85;
+            openSiriUtterance.pitch = 1.0;
+            openSiriUtterance.volume = 1.0;
+            openSiriUtterance.lang = 'en-US';
+
+            openSiriUtterance.onend = function() {
+                updateStatus(`⏳ Waiting 3 seconds for Siri to open...`, 'siri');
+                
+                // Step 2: Wait 3 seconds, then speak "Hey Siri" followed by the command after 2 seconds
+                setTimeout(() => {
+                    updateStatus(`🎤 Step 2: Activating Siri with "Hey Siri"...`, 'siri');
                     
-                    setTimeout(() => {
-                        if (document.body.contains(iframe)) {
-                            document.body.removeChild(iframe);
-                        }
-                    }, 100);
-                    
-                    logSystem(`✅ file:// URL attempted: ${filePath}`, "success");
-                } catch (error) {
-                    logSystem(`❌ file:// URL blocked: ${filePath}`, "error");
-                }
+                    const heySiriUtterance = new SpeechSynthesisUtterance("Hey Siri");
+                    heySiriUtterance.rate = 0.9;
+                    heySiriUtterance.pitch = 1.1;
+                    heySiriUtterance.volume = 1.0;
+                    heySiriUtterance.lang = 'en-US';
 
-                // Method 2: XMLHttpRequest (will be blocked by CORS)
-                try {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('GET', `file://${filePath}`, false);
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState === 4) {
-                            if (xhr.status === 200) {
-                                logSystem(`✅ XHR Success: ${filePath}`, "success");
-                            } else {
-                                logSystem(`❌ XHR Failed: ${filePath} - Status ${xhr.status}`, "error");
-                            }
-                        }
-                    };
-                    xhr.send();
-                } catch (error) {
-                    logSystem(`❌ XHR Blocked: ${filePath} - ${error.message}`, "error");
-                }
-
-                // Method 3: Fetch API (will be blocked by CORS)
-                try {
-                    fetch(`file://${filePath}`)
-                        .then(response => {
-                            if (response.ok) {
-                                logSystem(`✅ Fetch Success: ${filePath}`, "success");
-                            } else {
-                                logSystem(`❌ Fetch Failed: ${filePath} - Status ${response.status}`, "error");
-                            }
-                        })
-                        .catch(error => {
-                            logSystem(`❌ Fetch Blocked: ${filePath} - ${error.message}`, "error");
-                        });
-                } catch (error) {
-                    logSystem(`❌ Fetch Error: ${filePath} - ${error.message}`, "error");
-                }
-
-                // Method 4: Using anchor tag with download attribute
-                try {
-                    const link = document.createElement('a');
-                    link.href = `file://${filePath}`;
-                    link.download = 'test';
-                    link.style.display = 'none';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    logSystem(`✅ Download link attempted: ${filePath}`, "success");
-                } catch (error) {
-                    logSystem(`❌ Download link failed: ${filePath}`, "error");
-                }
-
-            } catch (error) {
-                logSystem(`❌ File access completely blocked: ${filePath} - ${error.message}`, "error");
-            }
-        }
-
-        async function testAllFileAccess() {
-            logSystem("Testing all file access paths...", "info");
-            const paths = [
-                '/Applications/',
-                '/Users/',
-                '/System/',
-                '/Library/',
-                '~/Desktop/',
-                '~/Documents/',
-                '/etc/hosts',
-                '/private/etc/hosts',
-                '/System/Library/CoreServices/'
-            ];
-            
-            for (const path of paths) {
-                await testFileAccess(path);
-                await new Promise(r => setTimeout(r, 500)); // Delay between tests
-            }
-        }
-
-        async function testFileURISchemes() {
-            logSystem("Testing file URI schemes...", "info");
-            await establishHoverContext();
-            
-            const schemes = [
-                { name: "file:///Applications/", url: "file:///Applications/" },
-                { name: "file:///Users/", url: "file:///Users/" },
-                { name: "x-file:///", url: "x-file:///" },
-                { name: "local-file://", url: "local-file://" },
-                { name: "system-file://", url: "system-file://" }
-            ];
-            
-            for (const scheme of schemes) {
-                try {
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = scheme.url;
-                    document.body.appendChild(iframe);
-                    
-                    setTimeout(() => {
-                        if (document.body.contains(iframe)) {
-                            document.body.removeChild(iframe);
-                        }
-                    }, 100);
-                    
-                    logSystem(`✅ File URI attempted: ${scheme.name}`, "success");
-                    await new Promise(r => setTimeout(r, 200));
-                } catch (error) {
-                    logSystem(`❌ File URI failed: ${scheme.name} - ${error.message}`, "error");
-                }
-            }
-        }
-
-        async function testFileContentReading() {
-            logSystem("Testing file content reading methods...", "info");
-            await establishHoverContext();
-            
-            try {
-                // Method 1: Using FileReader with blob (requires user interaction)
-                const blob = new Blob(['test content'], { type: 'text/plain' });
-                const file = new File([blob], 'test.txt', { type: 'text/plain' });
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    logSystem(`✅ FileReader loaded: ${e.target.result}`, "success");
-                };
-                reader.onerror = function(e) {
-                    logSystem(`❌ FileReader error: ${e.target.error}`, "error");
-                };
-                reader.readAsText(file);
-                
-                // Method 2: Create object URL
-                const objectUrl = URL.createObjectURL(blob);
-                logSystem(`✅ Object URL created: ${objectUrl}`, "success");
-                URL.revokeObjectURL(objectUrl);
-                
-                // Method 3: Try to access common system files through various methods
-                const commonFiles = [
-                    'file:///etc/hosts',
-                    'file:///private/etc/hosts',
-                    'file:///System/Library/CoreServices/SystemVersion.plist'
-                ];
-                
-                for (const fileUrl of commonFiles) {
-                    try {
-                        const iframe = document.createElement('iframe');
-                        iframe.style.display = 'none';
-                        iframe.src = fileUrl;
-                        document.body.appendChild(iframe);
-                        setTimeout(() => {
-                            if (document.body.contains(iframe)) {
-                                document.body.removeChild(iframe);
-                            }
-                        }, 100);
-                        logSystem(`✅ System file access attempted: ${fileUrl}`, "success");
-                    } catch (error) {
-                        logSystem(`❌ System file access failed: ${fileUrl}`, "error");
-                    }
-                }
-                
-            } catch (error) {
-                logSystem(`❌ File content reading failed: ${error.message}`, "error");
-            }
-        }
-
-        function testFileAPIAccess() {
-            logSystem("Testing File System Access API...", "info");
-            
-            // Check for modern File System Access API
-            if ('showOpenFilePicker' in window) {
-                logSystem("✅ File System Access API is available", "success");
-                
-                // Note: This requires user gesture, so we can only show it's available
-                try {
-                    // This would normally require a user click
-                    window.showOpenFilePicker({
-                        types: [
-                            {
-                                description: 'Text Files',
-                                accept: {
-                                    'text/plain': ['.txt']
-                                }
-                            }
-                        ]
-                    }).then(fileHandles => {
-                        logSystem("✅ File System Access API: File picker opened", "success");
-                    }).catch(error => {
-                        logSystem(`❌ File System Access API: ${error.message}`, "error");
-                    });
-                } catch (error) {
-                    logSystem(`❌ File System Access API error: ${error.message}`, "error");
-                }
-            } else {
-                logSystem("❌ File System Access API not supported", "error");
-            }
-            
-            // Check for older File API
-            if ('File' in window && 'FileReader' in window && 'FileList' in window && 'Blob' in window) {
-                logSystem("✅ Basic File API is available", "success");
-            } else {
-                logSystem("❌ Basic File API not fully supported", "error");
-            }
-        }
-
-        function simulateFileUpload() {
-            logSystem("Simulating file upload access...", "info");
-            
-            try {
-                // Create a file input element
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.style.display = 'none';
-                fileInput.accept = '.txt,.pdf,.doc,.docx';
-                
-                fileInput.onchange = function(event) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        logSystem(`✅ File selected: ${file.name} (${file.size} bytes)`, "success");
+                    heySiriUtterance.onend = function() {
+                        updateStatus(`⏳ Waiting 2 seconds before giving command...`, 'siri');
                         
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            logSystem(`✅ File content read: ${e.target.result.substring(0, 100)}...`, "success");
-                        };
-                        reader.onerror = function(e) {
-                            logSystem(`❌ File read error: ${e.target.error}`, "error");
-                        };
-                        reader.readAsText(file);
-                    }
-                };
-                
-                document.body.appendChild(fileInput);
-                fileInput.click();
-                
-                setTimeout(() => {
-                    if (document.body.contains(fileInput)) {
-                        document.body.removeChild(fileInput);
-                    }
-                }, 5000);
-                
-            } catch (error) {
-                logSystem(`❌ File upload simulation failed: ${error.message}`, "error");
+                        // Step 3: Wait 2 seconds, then speak the actual command
+                        setTimeout(() => {
+                            updateStatus(`🎤 Step 3: Speaking command to Siri: "${siriCommand}"`, 'siri');
+                            
+                            const commandUtterance = new SpeechSynthesisUtterance(siriCommand);
+                            commandUtterance.rate = 0.8;
+                            commandUtterance.pitch = 1.0;
+                            commandUtterance.volume = 1.0;
+                            commandUtterance.lang = 'en-US';
+
+                            commandUtterance.onend = function() {
+                                isSpeaking = false;
+                                indicator.classList.remove('siri-speaking', 'siri');
+                                updateStatus(`✅ Siri sequence completed! Command: "${siriCommand}"`, 'success');
+                            };
+
+                            speechSynthesis.speak(commandUtterance);
+                        }, 2000);
+                    };
+
+                    speechSynthesis.speak(heySiriUtterance);
+                }, 3000);
+            };
+
+            speechSynthesis.speak(openSiriUtterance);
+        }
+
+        function speakCustomSiriCommand() {
+            const customCommand = document.getElementById('customCommand').value.trim();
+            if (customCommand) {
+                speakSiriCommand(customCommand);
+            } else {
+                updateStatus('❌ Please enter a custom command for Siri', 'error');
             }
         }
 
-        // Existing system integration functions (unchanged)
-        async function testURISchemes() {
-            logSystem("Testing macOS URI schemes for Siri activation...", "info");
-            await establishHoverContext();
+        function testSiriSequence() {
+            updateStatus('🧪 Testing complete Siri sequence...', 'siri');
             
-            const schemes = [
-                { name: "Siri", url: "siri://" },
-                { name: "Siri Activate", url: "siri://activate" },
-                { name: "Siri Shortcut", url: "siri-shortcuts://" },
-                { name: "x-siri", url: "x-siri://" },
-                { name: "macos-siri", url: "macos-siri://" },
-                { name: "System Preferences Siri", url: "systempreferences://com.apple.preference.siri" },
-                { name: "Shortcuts", url: "shortcuts://run-siri" }
-            ];
-            
-            for (const scheme of schemes) {
-                try {
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = scheme.url;
-                    document.body.appendChild(iframe);
+            // Test a complete Siri interaction
+            setTimeout(() => {
+                speakSiriCommand("What is the weather today?");
+            }, 1000);
+        }
+
+        function highlightCommandCard(command) {
+            // Find and highlight the command card that was just spoken
+            const cards = document.querySelectorAll('.command-card');
+            cards.forEach(card => {
+                if (card.textContent.includes(command)) {
+                    card.classList.add('active');
                     
                     setTimeout(() => {
-                        if (document.body.contains(iframe)) {
-                            document.body.removeChild(iframe);
-                        }
-                    }, 100);
-                    
-                    logSystem(`✅ URI scheme attempted: ${scheme.name}`, "success");
-                    await new Promise(r => setTimeout(r, 200));
-                } catch (error) {
-                    logSystem(`❌ URI scheme failed: ${scheme.name} - ${error.message}`, "error");
+                        card.classList.remove('active');
+                    }, 2000);
                 }
-            }
+            });
         }
 
-        async function testAppleScriptSimulation() {
-            logSystem("Testing AppleScript simulation methods...", "info");
-            await establishHoverContext();
+        function enableVoiceControl() {
+            updateStatus('🔧 Instructions to enable Voice Control:', 'info');
             
-            try {
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = 'applescript://com.apple.scripteditor?action=new&script=tell%20application%20%22System%20Events%22%20to%20key%20code%2049%20using%20command%20down';
-                document.body.appendChild(iframe);
+            const instructions = `
+1. Open System Preferences → Accessibility
+2. Select "Voice Control" from the sidebar  
+3. Click "Enable Voice Control"
+4. Make sure your microphone is working
+5. Test by saying "Open Safari" out loud
+6. Come back here and hover over commands!
+
+Current Status: ${isVoiceControlEnabled() ? '✅ Enabled' : '❌ Not Enabled'}
+            `;
+            
+            updateStatus(instructions, 'warning');
+            
+            // Speak the instructions
+            const utterance = new SpeechSynthesisUtterance(
+                "Please enable Voice Control in System Preferences under Accessibility. Then hover over commands to control your Mac."
+            );
+            speechSynthesis.speak(utterance);
+        }
+
+        function isVoiceControlEnabled() {
+            // This is a simulation - in reality, we can't detect Voice Control status from browser
+            return false; // Assume not enabled until user confirms
+        }
+
+        function testAllCommands() {
+            updateStatus('🧪 Testing all voice commands sequentially...', 'info');
+            
+            const testCommands = [
+                'Open Safari',
+                'Show Desktop', 
+                'Open Finder',
+                'Volume Up',
+                'Click Safari',
+                'Show Numbers'
+            ];
+            
+            testCommands.forEach((command, index) => {
                 setTimeout(() => {
-                    if (document.body.contains(iframe)) {
-                        document.body.removeChild(iframe);
-                    }
-                }, 100);
-                logSystem("✅ AppleScript Editor launch attempted", "success");
-                
-            } catch (error) {
-                logSystem(`❌ AppleScript simulation failed: ${error.message}`, "error");
+                    speakCommand(command);
+                }, index * 3000); // 3 seconds between commands
+            });
+        }
+
+        function stopSpeaking() {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                isSpeaking = false;
+                const indicator = document.getElementById('voiceIndicator');
+                indicator.classList.remove('speaking', 'siri-speaking', 'siri');
+                updateStatus('⏹️ Speech stopped', 'warning');
             }
         }
 
-        async function testAccessibilityAPI() {
-            logSystem("Testing Accessibility API simulation...", "info");
-            await establishHoverContext();
-            
-            try {
-                if ('speechSynthesis' in window) {
-                    const utterance = new SpeechSynthesisUtterance();
-                    utterance.text = "Testing accessibility features";
-                    utterance.rate = 0.9;
-                    utterance.pitch = 1.1;
-                    utterance.volume = 1.0;
-                    
-                    speechSynthesis.speak(utterance);
-                    logSystem("✅ Accessibility speech activated", "success");
+        // Preload voices and initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load available voices
+            speechSynthesis.onvoiceschanged = function() {
+                const voices = speechSynthesis.getVoices();
+                console.log('Available voices:', voices.length);
+                updateStatus(`✅ Voice system ready with ${voices.length} voices`, 'success');
+            };
+
+            // Force voices to load
+            if (speechSynthesis.getVoices().length > 0) {
+                updateStatus(`✅ Voice system ready with ${speechSynthesis.getVoices().length} voices`, 'success');
+            }
+
+            // Auto-enable instructions on page load
+            setTimeout(enableVoiceControl, 1000);
+
+            // Allow Enter key to trigger custom Siri command
+            document.getElementById('customCommand').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    speakCustomSiriCommand();
                 }
-                
-            } catch (error) {
-                logSystem(`❌ Accessibility API test failed: ${error.message}`, "error");
-            }
-        }
-
-        async function testSpotlightIntegration() {
-            logSystem("Testing Spotlight integration...", "info");
-            await establishHoverContext();
-            
-            try {
-                const spotlightEvent = new KeyboardEvent('keydown', {
-                    key: ' ',
-                    code: 'Space',
-                    keyCode: 32,
-                    which: 32,
-                    metaKey: true,
-                    bubbles: true,
-                    cancelable: true
-                });
-                
-                [document, window, document.body].forEach(target => {
-                    const event = new KeyboardEvent('keydown', {
-                        key: ' ',
-                        code: 'Space',
-                        keyCode: 32,
-                        which: 32,
-                        metaKey: true,
-                        bubbles: true,
-                        cancelable: true
-                    });
-                    target.dispatchEvent(event);
-                });
-                
-                logSystem("✅ Spotlight trigger events dispatched", "success");
-                
-            } catch (error) {
-                logSystem(`❌ Spotlight integration failed: ${error.message}`, "error");
-            }
-        }
+            });
+        });
     </script>
 </body>
 </html>
