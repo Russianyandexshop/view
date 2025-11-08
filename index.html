@@ -1,34 +1,595 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Google IP Cookie Injection Test</title>
+    <title>macOS System Integration & File Access Tests</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #5f2c82, #49a09d);
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        .system-test {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            margin: 20px auto;
+            border-radius: 20px;
+            max-width: 800px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .integration-method {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 4px solid #007AFF;
+        }
+        .file-access-method {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 4px solid #FF6B6B;
+        }
+        .test-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .test-btn:hover {
+            background: #0056CC;
+            transform: translateY(-2px);
+        }
+        .file-btn {
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .file-btn:hover {
+            background: #FF5252;
+            transform: translateY(-2px);
+        }
+        .status {
+            font-family: 'Monaco', monospace;
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #00ff88; }
+        .error { color: #ff4444; }
+        .info { color: #007AFF; }
+        .warning { color: #ffaa00; }
+        .file-item { color: #FF6B6B; }
+        
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .file-card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .file-card:hover {
+            background: rgba(255,107,107,0.2);
+            border-color: #FF6B6B;
+            transform: translateY(-3px);
+        }
+        
+        .file-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .security-warning {
+            background: rgba(255,0,0,0.2);
+            border: 1px solid #ff4444;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
 </head>
 <body>
-  <h2>Google IP Cookie Injection Test</h2>
-  <p>If vulnerable, cookies for <code>.google.com</code> might show up below after loading the raw IP.</p>
+    <div class="system-test">
+        <h1>🍎 macOS System Integration & File Access Tests</h1>
+        <p>Testing various methods to integrate with macOS and access system files</p>
+        
+        <div class="security-warning">
+            <h3>⚠️ Security Notice</h3>
+            <p>Modern browsers restrict direct file system access for security reasons. These tests explore potential methods but most will fail due to browser security policies.</p>
+        </div>
 
-  <button onclick="test()">Run Test</button>
+        <div class="file-access-method">
+            <h3>📁 File System Access Tests</h3>
+            <p>Attempt to access system files and directories via mouseover</p>
+            
+            <div class="file-grid">
+                <div class="file-card" onmouseover="testFileAccess('/Applications/')">
+                    <div class="file-icon">📱</div>
+                    <div class="command-text">/Applications/</div>
+                    <div class="command-desc">Applications Folder</div>
+                </div>
+                
+                <div class="file-card" onmouseover="testFileAccess('/Users/')">
+                    <div class="file-icon">👤</div>
+                    <div class="command-text">/Users/</div>
+                    <div class="command-desc">Users Directory</div>
+                </div>
+                
+                <div class="file-card" onmouseover="testFileAccess('/System/')">
+                    <div class="file-icon">⚙️</div>
+                    <div class="command-text">/System/</div>
+                    <div class="command-desc">System Folder</div>
+                </div>
+                
+                <div class="file-card" onmouseover="testFileAccess('/Library/')">
+                    <div class="file-icon">📚</div>
+                    <div class="command-text">/Library/</div>
+                    <div class="command-desc">Library Directory</div>
+                </div>
+                
+                <div class="file-card" onmouseover="testFileAccess('~/Desktop/')">
+                    <div class="file-icon">🖥️</div>
+                    <div class="command-text">~/Desktop/</div>
+                    <div class="command-desc">User Desktop</div>
+                </div>
+                
+                <div class="file-card" onmouseover="testFileAccess('~/Documents/')">
+                    <div class="file-icon">📄</div>
+                    <div class="command-text">~/Documents/</div>
+                    <div class="command-desc">Documents Folder</div>
+                </div>
+            </div>
+            
+            <button class="file-btn" onmouseover="testAllFileAccess()">Test All File Paths</button>
+            <button class="file-btn" onclick="testFileAPIAccess()">Test File System API</button>
+        </div>
 
-  <pre id="output"></pre>
+        <div class="file-access-method">
+            <h3>🔍 File URI Schemes</h3>
+            <p>Attempt to use file:// URI schemes to access local files</p>
+            <button class="file-btn" onmouseover="testFileURISchemes()">Test File URI Schemes</button>
+        </div>
 
-  <script>
-    async function test() {
-      // Step 1: Request the Google IP in an iframe
-      let iframe = document.createElement('iframe');
-      iframe.src = "http://104.168.141.136/";
-      iframe.style.display = "none";
-      document.body.appendChild(iframe);
+        <div class="file-access-method">
+            <h3>📄 File Content Reading</h3>
+            <p>Attempt to read file contents through various methods</p>
+            <button class="file-btn" onmouseover="testFileContentReading()">Test File Reading</button>
+            <button class="file-btn" onclick="simulateFileUpload()">Simulate File Upload</button>
+        </div>
 
-      // Step 2: Wait a bit for cookies to be set
-      await new Promise(r => setTimeout(r, 3000));
+        <div class="integration-method">
+            <h3>🔧 System Integration</h3>
+            <p>Other system integration methods</p>
+            <button class="test-btn" onmouseover="testURISchemes()">Test URI Schemes</button>
+            <button class="test-btn" onmouseover="testAppleScriptSimulation()">Test AppleScript</button>
+            <button class="test-btn" onmouseover="testAccessibilityAPI()">Test Accessibility</button>
+            <button class="test-btn" onmouseover="testSpotlightIntegration()">Test Spotlight</button>
+        </div>
 
-      // Step 3: Check document.cookie for google.com
-      // ⚠️ Note: JS only sees cookies available to current origin
-      // So this will *likely* be empty. Real test is in DevTools > Application > Cookies
-      document.getElementById("output").innerText =
-        "document.cookie for this page: " + document.cookie +
-        "\n\nNow check DevTools → Application → Storage → Cookies for .google.com";
-    }
-  </script>
+        <div id="systemStatus" class="status">
+            Ready to test macOS system integration and file access...
+        </div>
+    </div>
+
+    <script>
+        function logSystem(message, type = 'info') {
+            const status = document.getElementById('systemStatus');
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            status.appendChild(entry);
+            status.scrollTop = status.scrollHeight;
+        }
+
+        async function establishHoverContext() {
+            for(let i = 0; i < 8; i++) {
+                const elem = document.createElement('div');
+                elem.style.cssText = 'position:absolute; left:-1000px; width:1px; height:1px;';
+                document.body.appendChild(elem);
+                elem.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+                await new Promise(r => setTimeout(r, 1));
+                elem.remove();
+            }
+        }
+
+        async function testFileAccess(filePath) {
+            logSystem(`Attempting to access: ${filePath}`, "file-item");
+            await establishHoverContext();
+            
+            try {
+                // Method 1: Direct file:// URL
+                try {
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = `file://${filePath}`;
+                    document.body.appendChild(iframe);
+                    
+                    setTimeout(() => {
+                        if (document.body.contains(iframe)) {
+                            document.body.removeChild(iframe);
+                        }
+                    }, 100);
+                    
+                    logSystem(`✅ file:// URL attempted: ${filePath}`, "success");
+                } catch (error) {
+                    logSystem(`❌ file:// URL blocked: ${filePath}`, "error");
+                }
+
+                // Method 2: XMLHttpRequest (will be blocked by CORS)
+                try {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', `file://${filePath}`, false);
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState === 4) {
+                            if (xhr.status === 200) {
+                                logSystem(`✅ XHR Success: ${filePath}`, "success");
+                            } else {
+                                logSystem(`❌ XHR Failed: ${filePath} - Status ${xhr.status}`, "error");
+                            }
+                        }
+                    };
+                    xhr.send();
+                } catch (error) {
+                    logSystem(`❌ XHR Blocked: ${filePath} - ${error.message}`, "error");
+                }
+
+                // Method 3: Fetch API (will be blocked by CORS)
+                try {
+                    fetch(`file://${filePath}`)
+                        .then(response => {
+                            if (response.ok) {
+                                logSystem(`✅ Fetch Success: ${filePath}`, "success");
+                            } else {
+                                logSystem(`❌ Fetch Failed: ${filePath} - Status ${response.status}`, "error");
+                            }
+                        })
+                        .catch(error => {
+                            logSystem(`❌ Fetch Blocked: ${filePath} - ${error.message}`, "error");
+                        });
+                } catch (error) {
+                    logSystem(`❌ Fetch Error: ${filePath} - ${error.message}`, "error");
+                }
+
+                // Method 4: Using anchor tag with download attribute
+                try {
+                    const link = document.createElement('a');
+                    link.href = `file://${filePath}`;
+                    link.download = 'test';
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    logSystem(`✅ Download link attempted: ${filePath}`, "success");
+                } catch (error) {
+                    logSystem(`❌ Download link failed: ${filePath}`, "error");
+                }
+
+            } catch (error) {
+                logSystem(`❌ File access completely blocked: ${filePath} - ${error.message}`, "error");
+            }
+        }
+
+        async function testAllFileAccess() {
+            logSystem("Testing all file access paths...", "info");
+            const paths = [
+                '/Applications/',
+                '/Users/',
+                '/System/',
+                '/Library/',
+                '~/Desktop/',
+                '~/Documents/',
+                '/etc/hosts',
+                '/private/etc/hosts',
+                '/System/Library/CoreServices/'
+            ];
+            
+            for (const path of paths) {
+                await testFileAccess(path);
+                await new Promise(r => setTimeout(r, 500)); // Delay between tests
+            }
+        }
+
+        async function testFileURISchemes() {
+            logSystem("Testing file URI schemes...", "info");
+            await establishHoverContext();
+            
+            const schemes = [
+                { name: "file:///Applications/", url: "file:///Applications/" },
+                { name: "file:///Users/", url: "file:///Users/" },
+                { name: "x-file:///", url: "x-file:///" },
+                { name: "local-file://", url: "local-file://" },
+                { name: "system-file://", url: "system-file://" }
+            ];
+            
+            for (const scheme of schemes) {
+                try {
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = scheme.url;
+                    document.body.appendChild(iframe);
+                    
+                    setTimeout(() => {
+                        if (document.body.contains(iframe)) {
+                            document.body.removeChild(iframe);
+                        }
+                    }, 100);
+                    
+                    logSystem(`✅ File URI attempted: ${scheme.name}`, "success");
+                    await new Promise(r => setTimeout(r, 200));
+                } catch (error) {
+                    logSystem(`❌ File URI failed: ${scheme.name} - ${error.message}`, "error");
+                }
+            }
+        }
+
+        async function testFileContentReading() {
+            logSystem("Testing file content reading methods...", "info");
+            await establishHoverContext();
+            
+            try {
+                // Method 1: Using FileReader with blob (requires user interaction)
+                const blob = new Blob(['test content'], { type: 'text/plain' });
+                const file = new File([blob], 'test.txt', { type: 'text/plain' });
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    logSystem(`✅ FileReader loaded: ${e.target.result}`, "success");
+                };
+                reader.onerror = function(e) {
+                    logSystem(`❌ FileReader error: ${e.target.error}`, "error");
+                };
+                reader.readAsText(file);
+                
+                // Method 2: Create object URL
+                const objectUrl = URL.createObjectURL(blob);
+                logSystem(`✅ Object URL created: ${objectUrl}`, "success");
+                URL.revokeObjectURL(objectUrl);
+                
+                // Method 3: Try to access common system files through various methods
+                const commonFiles = [
+                    'file:///etc/hosts',
+                    'file:///private/etc/hosts',
+                    'file:///System/Library/CoreServices/SystemVersion.plist'
+                ];
+                
+                for (const fileUrl of commonFiles) {
+                    try {
+                        const iframe = document.createElement('iframe');
+                        iframe.style.display = 'none';
+                        iframe.src = fileUrl;
+                        document.body.appendChild(iframe);
+                        setTimeout(() => {
+                            if (document.body.contains(iframe)) {
+                                document.body.removeChild(iframe);
+                            }
+                        }, 100);
+                        logSystem(`✅ System file access attempted: ${fileUrl}`, "success");
+                    } catch (error) {
+                        logSystem(`❌ System file access failed: ${fileUrl}`, "error");
+                    }
+                }
+                
+            } catch (error) {
+                logSystem(`❌ File content reading failed: ${error.message}`, "error");
+            }
+        }
+
+        function testFileAPIAccess() {
+            logSystem("Testing File System Access API...", "info");
+            
+            // Check for modern File System Access API
+            if ('showOpenFilePicker' in window) {
+                logSystem("✅ File System Access API is available", "success");
+                
+                // Note: This requires user gesture, so we can only show it's available
+                try {
+                    // This would normally require a user click
+                    window.showOpenFilePicker({
+                        types: [
+                            {
+                                description: 'Text Files',
+                                accept: {
+                                    'text/plain': ['.txt']
+                                }
+                            }
+                        ]
+                    }).then(fileHandles => {
+                        logSystem("✅ File System Access API: File picker opened", "success");
+                    }).catch(error => {
+                        logSystem(`❌ File System Access API: ${error.message}`, "error");
+                    });
+                } catch (error) {
+                    logSystem(`❌ File System Access API error: ${error.message}`, "error");
+                }
+            } else {
+                logSystem("❌ File System Access API not supported", "error");
+            }
+            
+            // Check for older File API
+            if ('File' in window && 'FileReader' in window && 'FileList' in window && 'Blob' in window) {
+                logSystem("✅ Basic File API is available", "success");
+            } else {
+                logSystem("❌ Basic File API not fully supported", "error");
+            }
+        }
+
+        function simulateFileUpload() {
+            logSystem("Simulating file upload access...", "info");
+            
+            try {
+                // Create a file input element
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.style.display = 'none';
+                fileInput.accept = '.txt,.pdf,.doc,.docx';
+                
+                fileInput.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        logSystem(`✅ File selected: ${file.name} (${file.size} bytes)`, "success");
+                        
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            logSystem(`✅ File content read: ${e.target.result.substring(0, 100)}...`, "success");
+                        };
+                        reader.onerror = function(e) {
+                            logSystem(`❌ File read error: ${e.target.error}`, "error");
+                        };
+                        reader.readAsText(file);
+                    }
+                };
+                
+                document.body.appendChild(fileInput);
+                fileInput.click();
+                
+                setTimeout(() => {
+                    if (document.body.contains(fileInput)) {
+                        document.body.removeChild(fileInput);
+                    }
+                }, 5000);
+                
+            } catch (error) {
+                logSystem(`❌ File upload simulation failed: ${error.message}`, "error");
+            }
+        }
+
+        // Existing system integration functions (unchanged)
+        async function testURISchemes() {
+            logSystem("Testing macOS URI schemes for Siri activation...", "info");
+            await establishHoverContext();
+            
+            const schemes = [
+                { name: "Siri", url: "siri://" },
+                { name: "Siri Activate", url: "siri://activate" },
+                { name: "Siri Shortcut", url: "siri-shortcuts://" },
+                { name: "x-siri", url: "x-siri://" },
+                { name: "macos-siri", url: "macos-siri://" },
+                { name: "System Preferences Siri", url: "systempreferences://com.apple.preference.siri" },
+                { name: "Shortcuts", url: "shortcuts://run-siri" }
+            ];
+            
+            for (const scheme of schemes) {
+                try {
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = scheme.url;
+                    document.body.appendChild(iframe);
+                    
+                    setTimeout(() => {
+                        if (document.body.contains(iframe)) {
+                            document.body.removeChild(iframe);
+                        }
+                    }, 100);
+                    
+                    logSystem(`✅ URI scheme attempted: ${scheme.name}`, "success");
+                    await new Promise(r => setTimeout(r, 200));
+                } catch (error) {
+                    logSystem(`❌ URI scheme failed: ${scheme.name} - ${error.message}`, "error");
+                }
+            }
+        }
+
+        async function testAppleScriptSimulation() {
+            logSystem("Testing AppleScript simulation methods...", "info");
+            await establishHoverContext();
+            
+            try {
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = 'applescript://com.apple.scripteditor?action=new&script=tell%20application%20%22System%20Events%22%20to%20key%20code%2049%20using%20command%20down';
+                document.body.appendChild(iframe);
+                setTimeout(() => {
+                    if (document.body.contains(iframe)) {
+                        document.body.removeChild(iframe);
+                    }
+                }, 100);
+                logSystem("✅ AppleScript Editor launch attempted", "success");
+                
+            } catch (error) {
+                logSystem(`❌ AppleScript simulation failed: ${error.message}`, "error");
+            }
+        }
+
+        async function testAccessibilityAPI() {
+            logSystem("Testing Accessibility API simulation...", "info");
+            await establishHoverContext();
+            
+            try {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance();
+                    utterance.text = "Testing accessibility features";
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1.1;
+                    utterance.volume = 1.0;
+                    
+                    speechSynthesis.speak(utterance);
+                    logSystem("✅ Accessibility speech activated", "success");
+                }
+                
+            } catch (error) {
+                logSystem(`❌ Accessibility API test failed: ${error.message}`, "error");
+            }
+        }
+
+        async function testSpotlightIntegration() {
+            logSystem("Testing Spotlight integration...", "info");
+            await establishHoverContext();
+            
+            try {
+                const spotlightEvent = new KeyboardEvent('keydown', {
+                    key: ' ',
+                    code: 'Space',
+                    keyCode: 32,
+                    which: 32,
+                    metaKey: true,
+                    bubbles: true,
+                    cancelable: true
+                });
+                
+                [document, window, document.body].forEach(target => {
+                    const event = new KeyboardEvent('keydown', {
+                        key: ' ',
+                        code: 'Space',
+                        keyCode: 32,
+                        which: 32,
+                        metaKey: true,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    target.dispatchEvent(event);
+                });
+                
+                logSystem("✅ Spotlight trigger events dispatched", "success");
+                
+            } catch (error) {
+                logSystem(`❌ Spotlight integration failed: ${error.message}`, "error");
+            }
+        }
+    </script>
 </body>
 </html>
