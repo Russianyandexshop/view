@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File System Access Tests - Apple Bug Bounty</title>
+    <title>Web Origin File Access Tests - Apple Bug Bounty</title>
     <style>
         * {
             margin: 0;
@@ -38,7 +38,7 @@
             padding: 15px;
             border-radius: 5px;
             margin: 10px 0;
-            height: 400px;
+            height: 500px;
             overflow-y: auto;
             border: 1px solid #333;
         }
@@ -46,41 +46,41 @@
         .error { color: #ff4444; }
         .warning { color: #ffaa00; }
         .info { color: #66ccff; }
-        .file-path { color: #a855f7; }
+        .critical { color: #ff4444; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🍎 File System Access Tests - Bug Bounty</h1>
-        <p>Testing automatic file system access vectors in Safari</p>
+        <h1>🌐 Web Origin File Access Tests - Bug Bounty</h1>
+        <p>Testing file system access from WEB ORIGIN (http/https)</p>
 
         <div class="test-section">
-            <div class="test-title">📁 File Protocol Access Tests</div>
-            <div id="fileProtocolTests">Testing file:// protocol access...</div>
+            <div class="test-title">🎯 Critical - File Protocol from Web Origin</div>
+            <div id="criticalTests">Testing if web page can access file:// URLs...</div>
         </div>
 
         <div class="test-section">
-            <div class="test-title">🔧 File System API Tests</div>
-            <div id="fsApiTests">Testing File System APIs...</div>
+            <div class="test-title">📁 File System Access API</div>
+            <div id="fsTests">Testing modern File System APIs...</div>
         </div>
 
         <div class="test-section">
-            <div class="test-title">📄 File Input & Drag/Drop</div>
-            <div id="fileInputTests">Testing file input methods...</div>
+            <div class="test-title">🔍 File Detection via Errors</div>
+            <div id="detectionTests">Testing file existence detection...</div>
         </div>
 
         <div class="test-section">
-            <div class="test-title">🌐 Network-Based File Detection</div>
-            <div id="networkTests">Testing network file detection...</div>
+            <div class="test-title">📡 Network & Localhost Access</div>
+            <div id="networkTests">Testing local network access...</div>
         </div>
 
         <div class="test-section">
-            <div class="test-title">⚡ Safari-Specific Methods</div>
-            <div id="safariTests">Testing Safari-specific APIs...</div>
+            <div class="test-title">⚡ Safari-Specific Vulnerabilities</div>
+            <div id="safariTests">Testing Safari-specific bypasses...</div>
         </div>
 
         <div class="status" id="statusLog">
-            File System Access Test Log - Starting...
+            Web Origin File Access Test Log - Starting...
         </div>
     </div>
 
@@ -95,321 +95,303 @@
             logElement.scrollTop = logElement.scrollHeight;
         }
 
-        // Common macOS file paths to test
-        const macosPaths = [
-            '/Users/',
-            '/Users/Shared/',
-            '/Applications/',
-            '/System/',
-            '/Library/',
-            '/private/',
-            '/private/etc/',
-            '/private/var/',
-            '/Volumes/',
-            '/tmp/',
-            '/opt/',
-            '/usr/',
-            '/bin/',
-            '/sbin/',
-            '/etc/hosts',
-            '/etc/passwd',
-            '/System/Library/CoreServices/SystemVersion.plist',
-            '/private/var/log/system.log',
-            '/private/var/db/dhcpclient/leases/',
-            '/Users/Shared/Public/',
-            '/Users/Shared/Public/Drop Box/'
-        ];
+        // Test 1: Critical - Can we access file:// from web origin?
+        async function testFileProtocolFromWebOrigin() {
+            log('CRITICAL TEST: Attempting file:// access from web origin...', 'critical');
+            const results = document.getElementById('criticalTests');
 
-        // Test 1: File Protocol Direct Access
-        async function testFileProtocolAccess() {
-            log('Testing file:// protocol access...', 'info');
-            const results = document.getElementById('fileProtocolTests');
-            
-            for (const path of macosPaths) {
+            const testPaths = [
+                '/etc/hosts',
+                '/Users/',
+                '/System/',
+                '/private/etc/passwd'
+            ];
+
+            let anySuccess = false;
+
+            for (const path of testPaths) {
                 try {
-                    // Method 1: iframe loading
+                    // Method 1: iframe with file://
                     const iframe = document.createElement('iframe');
                     iframe.style.display = 'none';
                     iframe.src = `file://${path}`;
-                    iframe.onload = () => {
-                        log(`✅ IFRAME LOADED: file://${path}`, 'success');
-                        results.innerHTML += `<div class="success">✅ ${path}</div>`;
+                    
+                    iframe.onload = function() {
+                        log(`🚨 CRITICAL: IFRAME LOADED file://${path} FROM WEB ORIGIN!`, 'critical');
+                        results.innerHTML += `<div class="critical">🚨 IFRAME: file://${path} - VULNERABLE!</div>`;
+                        anySuccess = true;
                     };
-                    iframe.onerror = () => {
-                        log(`❌ IFRAME BLOCKED: file://${path}`, 'error');
+                    
+                    iframe.onerror = function() {
+                        log(`✅ IFRAME BLOCKED: file://${path}`, 'success');
                     };
+                    
                     document.body.appendChild(iframe);
-                    setTimeout(() => document.body.removeChild(iframe), 1000);
+                    setTimeout(() => {
+                        if (document.body.contains(iframe)) {
+                            document.body.removeChild(iframe);
+                        }
+                    }, 2000);
 
-                    // Method 2: XMLHttpRequest
+                    // Method 2: Fetch file://
+                    try {
+                        const response = await fetch(`file://${path}`);
+                        if (response.ok) {
+                            const content = await response.text();
+                            log(`🚨 CRITICAL: FETCH SUCCESS file://${path} - Content: ${content.substring(0, 100)}`, 'critical');
+                            results.innerHTML += `<div class="critical">🚨 FETCH: file://${path} - VULNERABLE!</div>`;
+                            anySuccess = true;
+                        }
+                    } catch (e) {
+                        // Expected to fail
+                    }
+
+                    // Method 3: XHR file://
                     try {
                         const xhr = new XMLHttpRequest();
                         xhr.open('GET', `file://${path}`, false);
                         xhr.onreadystatechange = function() {
-                            if (xhr.readyState === 4) {
-                                if (xhr.status === 200) {
-                                    log(`✅ XHR SUCCESS: file://${path}`, 'success');
-                                    results.innerHTML += `<div class="success">✅ XHR: ${path}</div>`;
-                                }
+                            if (xhr.readyState === 4 && xhr.status === 200) {
+                                log(`🚨 CRITICAL: XHR SUCCESS file://${path}`, 'critical');
+                                results.innerHTML += `<div class="critical">🚨 XHR: file://${path} - VULNERABLE!</div>`;
+                                anySuccess = true;
                             }
                         };
                         xhr.send();
-                    } catch (xhrError) {
+                    } catch (e) {
                         // Expected to fail
                     }
 
-                    // Method 3: Fetch API
-                    try {
-                        fetch(`file://${path}`)
-                            .then(response => {
-                                if (response.ok) {
-                                    log(`✅ FETCH SUCCESS: file://${path}`, 'success');
-                                    results.innerHTML += `<div class="success">✅ FETCH: ${path}</div>`;
-                                }
-                            })
-                            .catch(() => {});
-                    } catch (fetchError) {
-                        // Expected to fail
-                    }
-
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 } catch (error) {
                     log(`Error testing ${path}: ${error.message}`, 'error');
                 }
             }
+
+            if (!anySuccess) {
+                results.innerHTML += '<div class="success">✅ All file:// access blocked from web origin</div>';
+            }
         }
 
-        // Test 2: File System API Access
-        async function testFileSystemAPIs() {
-            log('Testing File System APIs...', 'info');
-            const results = document.getElementById('fsApiTests');
+        // Test 2: File System Access API
+        async function testFileSystemAPI() {
+            log('Testing File System Access API...', 'info');
+            const results = document.getElementById('fsTests');
 
-            // Check for modern File System Access API
-            if ('showDirectoryPicker' in window) {
-                log('✅ showDirectoryPicker API available', 'success');
-                results.innerHTML += '<div class="success">✅ showDirectoryPicker available</div>';
+            // Modern File System Access API
+            if ('showOpenFilePicker' in window) {
+                log('⚠️ showOpenFilePicker API available', 'warning');
                 
                 try {
-                    const handle = await window.showDirectoryPicker();
-                    log('✅ Directory picker opened successfully', 'success');
+                    // This should require user gesture, but let's try anyway
+                    const handles = await window.showOpenFilePicker();
+                    log('🚨 CRITICAL: showOpenFilePicker worked without user gesture!', 'critical');
+                    results.innerHTML += '<div class="critical">🚨 showOpenFilePicker - VULNERABLE!</div>';
                 } catch (e) {
-                    log(`❌ Directory picker blocked: ${e.message}`, 'error');
+                    log(`✅ showOpenFilePicker blocked: ${e.message}`, 'success');
+                    results.innerHTML += '<div class="success">✅ showOpenFilePicker requires user interaction</div>';
                 }
             }
 
-            // Check for legacy webkitRequestFileSystem
+            // Legacy webkitRequestFileSystem
             if ('webkitRequestFileSystem' in window) {
-                log('⚠️ webkitRequestFileSystem available (legacy)', 'warning');
-                results.innerHTML += '<div class="warning">⚠️ webkitRequestFileSystem available</div>';
+                log('Testing webkitRequestFileSystem...', 'info');
                 
                 try {
                     window.webkitRequestFileSystem(window.TEMPORARY, 1024, function(fs) {
-                        log('✅ webkitRequestFileSystem success', 'success');
+                        log('✅ webkitRequestFileSystem sandbox access', 'success');
+                        results.innerHTML += '<div class="success">✅ webkitRequestFileSystem sandboxed</div>';
                     }, function(e) {
-                        log(`❌ webkitRequestFileSystem failed: ${e.message}`, 'error');
+                        log(`✅ webkitRequestFileSystem blocked: ${e.message}`, 'success');
                     });
                 } catch (e) {
-                    log(`❌ webkitRequestFileSystem error: ${e.message}`, 'error');
+                    log(`✅ webkitRequestFileSystem error: ${e.message}`, 'success');
                 }
             }
+        }
 
-            // Check for storage access
-            if ('storage' in navigator) {
+        // Test 3: File Existence Detection via Error Messages
+        async function testFileExistenceDetection() {
+            log('Testing file existence detection through error messages...', 'info');
+            const results = document.getElementById('detectionTests');
+
+            const testFiles = [
+                'file:///etc/passwd',
+                'file:///Users/Shared/test.txt',
+                'file:///System/Library/CoreServices/SystemVersion.plist'
+            ];
+
+            for (const file of testFiles) {
                 try {
-                    const estimate = await navigator.storage.estimate();
-                    log(`✅ Storage API: ${(estimate.usage / 1024 / 1024).toFixed(2)}MB used`, 'success');
-                    results.innerHTML += `<div class="success">✅ Storage: ${(estimate.usage / 1024 / 1024).toFixed(2)}MB used</div>`;
+                    // Try to load as image to detect existence
+                    await new Promise((resolve) => {
+                        const img = new Image();
+                        img.onload = function() {
+                            log(`🚨 CRITICAL: File detected via image load: ${file}`, 'critical');
+                            results.innerHTML += `<div class="critical">🚨 Image detection: ${file}</div>`;
+                            resolve();
+                        };
+                        img.onerror = function() {
+                            // Different error messages might reveal file existence
+                            resolve();
+                        };
+                        img.src = file;
+                    });
+
+                    // Try to load as script
+                    const script = document.createElement('script');
+                    script.src = file;
+                    script.onerror = function(e) {
+                        // Error message analysis might reveal file info
+                    };
+                    document.head.appendChild(script);
+                    setTimeout(() => document.head.removeChild(script), 1000);
+
                 } catch (e) {
-                    log(`❌ Storage API error: ${e.message}`, 'error');
+                    // Continue testing
                 }
             }
+
+            results.innerHTML += '<div class="info">ℹ️ File detection attempts completed</div>';
         }
 
-        // Test 3: File Input Methods
-        function testFileInputMethods() {
-            log('Testing file input methods...', 'info');
-            const results = document.getElementById('fileInputTests');
-
-            try {
-                // Create hidden file input
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.style.display = 'none';
-                input.webkitdirectory = true; // Try to enable directory selection
-                input.multiple = true;
-
-                // Try to programmatically trigger click
-                input.click();
-                log('⚠️ File input click triggered', 'warning');
-                results.innerHTML += '<div class="warning">⚠️ File input triggered</div>';
-
-                setTimeout(() => {
-                    if (document.body.contains(input)) {
-                        document.body.removeChild(input);
-                    }
-                }, 1000);
-
-            } catch (e) {
-                log(`❌ File input error: ${e.message}`, 'error');
-            }
-
-            // Test drag and drop data transfer
-            document.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                log('⚠️ Drag over event detected', 'warning');
-            });
-
-            document.addEventListener('drop', (e) => {
-                e.preventDefault();
-                log('⚠️ Drop event detected', 'warning');
-            });
-        }
-
-        // Test 4: Network-Based File Detection
-        function testNetworkFileDetection() {
-            log('Testing network-based file detection...', 'info');
+        // Test 4: Local Network & Service Access
+        async function testLocalNetworkAccess() {
+            log('Testing local network and service access...', 'info');
             const results = document.getElementById('networkTests');
 
-            // Try to detect local files through various methods
             const localServices = [
-                'file:///etc/hosts',
                 'http://localhost/',
                 'http://127.0.0.1/',
                 'http://localhost:631/', // CUPS
                 'http://localhost:548/', // AFP
                 'http://localhost:5900/', // VNC
                 'http://localhost:8080/',
-                'http://localhost:3000/'
+                'file://localhost/',
+                'http://[::1]/'
             ];
 
+            for (const service of localServices) {
+                try {
+                    const response = await fetch(service, { 
+                        method: 'HEAD',
+                        mode: 'no-cors'
+                    });
+                    log(`⚠️ Local service responded: ${service}`, 'warning');
+                    results.innerHTML += `<div class="warning">⚠️ Local service: ${service}</div>`;
+                } catch (e) {
+                    // Expected to fail in most cases
+                }
+            }
+
+            // Test iframe loading local services
             localServices.forEach(service => {
-                const img = new Image();
-                img.onload = () => {
-                    log(`✅ Service detected: ${service}`, 'success');
-                    results.innerHTML += `<div class="success">✅ ${service}</div>`;
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = service;
+                iframe.onload = function() {
+                    log(`🚨 CRITICAL: Local service loaded via iframe: ${service}`, 'critical');
+                    results.innerHTML += `<div class="critical">🚨 Local iframe: ${service}</div>`;
                 };
-                img.onerror = () => {
-                    // Service not available or blocked
-                };
-                img.src = service;
+                document.body.appendChild(iframe);
+                setTimeout(() => {
+                    if (document.body.contains(iframe)) {
+                        document.body.removeChild(iframe);
+                    }
+                }, 3000);
             });
         }
 
-        // Test 5: Safari-Specific Methods
-        function testSafariSpecificMethods() {
-            log('Testing Safari-specific methods...', 'info');
+        // Test 5: Safari-Specific Bypasses
+        function testSafariSpecificBypasses() {
+            log('Testing Safari-specific bypass methods...', 'info');
             const results = document.getElementById('safariTests');
 
-            // Check for Safari-specific APIs
+            // Test WebKit specific features
             if (window.webkit) {
-                log('✅ WebKit APIs detected', 'success');
-                results.innerHTML += '<div class="success">✅ WebKit APIs available</div>';
-
-                // Test webkit message handlers
+                log('✅ WebKit environment detected', 'info');
+                
+                // Test for any WebKit-specific file access methods
                 if (webkit.messageHandlers) {
-                    log('✅ WebKit message handlers available', 'success');
-                    results.innerHTML += '<div class="success">✅ WebKit message handlers</div>';
+                    log('⚠️ WebKit message handlers available', 'warning');
+                    
+                    // Try to find any file-related message handlers
+                    const handlers = Object.keys(webkit.messageHandlers);
+                    handlers.forEach(handler => {
+                        log(`ℹ️ Message handler: ${handler}`, 'info');
+                    });
                 }
             }
 
-            // Test for legacy Safari features
-            if (window.showModalDialog) {
-                log('⚠️ showModalDialog available (legacy)', 'warning');
-                results.innerHTML += '<div class="warning">⚠️ showModalDialog available</div>';
+            // Test for legacy Safari APIs that might bypass security
+            if (window.openDatabase) {
+                log('⚠️ WebSQL available (legacy)', 'warning');
+                // WebSQL might have different security rules
             }
 
-            // Test for FileReader with custom protocols
-            try {
-                const reader = new FileReader();
-                reader.onload = () => log('✅ FileReader operational', 'success');
-                reader.readAsText(new Blob(['test']));
-            } catch (e) {
-                log(`❌ FileReader error: ${e.message}`, 'error');
-            }
-
-            // Test Object URL creation
-            try {
-                const blob = new Blob(['test content'], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                log(`✅ Object URL created: ${url.substring(0, 50)}`, 'success');
-                results.innerHTML += '<div class="success">✅ Object URLs work</div>';
-                URL.revokeObjectURL(url);
-            } catch (e) {
-                log(`❌ Object URL error: ${e.message}`, 'error');
-            }
-        }
-
-        // Additional test: Try to access through various URI schemes
-        function testURISchemes() {
-            log('Testing URI schemes...', 'info');
-            
-            const schemes = [
-                'file:///',
+            // Test for any unusual URI schemes Safari might handle
+            const unusualSchemes = [
                 'x-file:///',
-                'local-file://',
-                'system-file://',
-                'finder://',
-                'safari://',
-                'x-safari://'
+                'safari-file://',
+                'webkit-file://',
+                'localstorage://',
+                'safari-extension://'
             ];
 
-            schemes.forEach(scheme => {
-                try {
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = scheme;
-                    iframe.onload = () => log(`✅ Scheme loaded: ${scheme}`, 'success');
-                    iframe.onerror = () => {}; // Expected to fail
-                    document.body.appendChild(iframe);
-                    setTimeout(() => {
-                        if (document.body.contains(iframe)) {
-                            document.body.removeChild(iframe);
-                        }
-                    }, 500);
-                } catch (e) {
-                    // Expected to fail
-                }
+            unusualSchemes.forEach(scheme => {
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = scheme + 'etc/hosts';
+                iframe.onload = function() {
+                    log(`🚨 CRITICAL: Unusual scheme loaded: ${scheme}`, 'critical');
+                    results.innerHTML += `<div class="critical">🚨 Scheme: ${scheme}</div>`;
+                };
+                document.body.appendChild(iframe);
+                setTimeout(() => {
+                    if (document.body.contains(iframe)) {
+                        document.body.removeChild(iframe);
+                    }
+                }, 2000);
             });
+
+            results.innerHTML += '<div class="info">ℹ️ Safari-specific tests completed</div>';
         }
 
-        // Auto-execute all tests
+        // Auto-execute all tests when hosted on web server
         window.addEventListener('load', () => {
-            log('Starting automatic file system access tests...', 'info');
+            log('🌐 WEB ORIGIN TESTS STARTING - Hosted from: ' + window.location.origin, 'critical');
             
-            setTimeout(testFileProtocolAccess, 100);
-            setTimeout(testFileSystemAPIs, 2000);
-            setTimeout(testFileInputMethods, 4000);
-            setTimeout(testNetworkFileDetection, 6000);
-            setTimeout(testSafariSpecificMethods, 8000);
-            setTimeout(testURISchemes, 10000);
-
-            // Additional tests after initial load
-            setTimeout(() => {
-                log('Running additional file system probes...', 'info');
+            // Only run if we're on a web origin (not file://)
+            if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+                log('✅ Testing from web origin - this is what matters for bug bounty!', 'success');
                 
-                // Try to access user home directory patterns
-                const homePatterns = [
-                    '/Users/' + (navigator.userAgent.match(/Mac/) ? 'Shared' : 'user') + '/',
-                    '/Users/*/Desktop/',
-                    '/Users/*/Documents/',
-                    '/Users/*/Downloads/'
-                ];
-
-                homePatterns.forEach(pattern => {
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = `file://${pattern}`;
-                    document.body.appendChild(iframe);
-                    setTimeout(() => document.body.removeChild(iframe), 1000);
-                });
-            }, 12000);
+                setTimeout(testFileProtocolFromWebOrigin, 1000);
+                setTimeout(testFileSystemAPI, 3000);
+                setTimeout(testFileExistenceDetection, 5000);
+                setTimeout(testLocalNetworkAccess, 7000);
+                setTimeout(testSafariSpecificBypasses, 9000);
+            } else {
+                log('❌ This test must be hosted on a web server (http/https) for valid bug bounty testing', 'error');
+            }
         });
 
-        // Attempt to detect successful file access
-        window.addEventListener('message', (event) => {
-            // This might catch some cross-origin file access
-            log(`Message received: ${event.origin}`, 'warning');
-        });
+        // Additional vulnerability tests
+        setTimeout(() => {
+            // Test for any postMessage vulnerabilities
+            window.postMessage('file:///etc/hosts', '*');
+            
+            // Test for any edge cases in error handling
+            try {
+                // This might reveal information in error messages
+                const x = null;
+                x.nonExistentMethod();
+            } catch (e) {
+                // Check if error reveals system information
+                if (e.stack && e.stack.includes('file://')) {
+                    log('🚨 CRITICAL: Error stack reveals file:// paths!', 'critical');
+                }
+            }
+        }, 11000);
 
     </script>
 </body>
