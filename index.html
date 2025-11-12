@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Protocol Hover-Click Test</title>
+    <title>Advanced File Protocol Bypass Tests</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             padding: 40px;
             background: #1a1a2e;
             color: white;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
         }
         .test-area {
@@ -29,19 +29,16 @@
             text-decoration: none;
             border: 1px solid #4285f4;
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         .file-link:hover {
             background: rgba(66, 133, 244, 0.5);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
         .file-link.clicked {
-            background: rgba(52, 168, 83, 0.7) !important;
-            border-color: #34a853;
+            background: rgba(52, 168, 83, 0.7);
         }
         .file-link.failed {
-            background: rgba(234, 67, 53, 0.7) !important;
-            border-color: #ea4335;
+            background: rgba(234, 67, 53, 0.7);
         }
         .status {
             background: rgba(0,0,0,0.5);
@@ -49,74 +46,93 @@
             border-radius: 5px;
             font-family: 'Monaco', monospace;
             margin: 20px 0;
-            height: 300px;
+            height: 400px;
             overflow-y: auto;
         }
         .success { color: #00ff88; }
         .warning { color: #ffaa00; }
         .error { color: #ff4444; }
-        .hover-area {
+        .critical { color: #ff4444; font-weight: bold; }
+        .section {
             background: rgba(255,255,255,0.05);
             padding: 20px;
             border-radius: 8px;
             margin: 15px 0;
             border: 2px dashed rgba(255,255,255,0.2);
         }
-        .hover-instructions {
-            text-align: center;
+        .section-title {
             color: #ffaa00;
-            margin: 10px 0;
+            margin-bottom: 15px;
+        }
+        button {
+            background: rgba(66, 133, 244, 0.6);
+            color: white;
+            border: 1px solid #4285f4;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: rgba(66, 133, 244, 0.8);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📁 File Protocol Hover-Click Test</h1>
+        <h1>🛡️ Advanced File Protocol Bypass Tests</h1>
         
         <div class="test-area">
-            <h3>Hover Over These Areas to Trigger File Link Clicks</h3>
-            
-            <div class="hover-instructions">✨ Hover over any colored area below to automatically click file links ✨</div>
-            
-            <div class="hover-area" onmouseover="triggerFileClicks(this)">
-                <h4>Zone 1: Direct File Links</h4>
-                <a href="file:///Users/Shared/" class="file-link" data-filename="Shared Folder">📂 file:///Users/Shared/</a>
-                <a href="file:///Applications/" class="file-link" data-filename="Applications">📂 file:///Applications/</a>
-                <a href="file:///System/Library/CoreServices/" class="file-link" data-filename="CoreServices">📂 file:///System/Library/CoreServices/</a>
+            <div class="section">
+                <h3 class="section-title">Method 1: Traditional File Links (Expected to Fail)</h3>
+                <a href="file:///Users/Shared/" class="file-link">📂 file:///Users/Shared/</a>
+                <a href="file:///Applications/" class="file-link">📂 file:///Applications/</a>
+                <a href="file:///System/Library/CoreServices/" class="file-link">📂 file:///System/Library/CoreServices/</a>
             </div>
 
-            <div class="hover-area" onmouseover="triggerFileClicks(this)">
-                <h4>Zone 2: Additional File Links</h4>
-                <a href="file:///Users/" class="file-link" data-filename="Users">📂 file:///Users/</a>
-                <a href="file:///tmp/" class="file-link" data-filename="Temp">📂 file:///tmp/</a>
-                <a href="file:///Library/" class="file-link" data-filename="Library">📂 file:///Library/</a>
+            <div class="section">
+                <h3 class="section-title">Method 2: User Gesture Bypass Attempts</h3>
+                <button onclick="testUserGestureBypass()">Click + setTimeout Bypass</button>
+                <button onclick="testDoubleClickBypass()">Double-Click Handler</button>
+                <button onclick="testDragAndDropBypass()">Drag & Drop Simulation</button>
+                <button onclick="testContextMenuBypass()">Right-Click Context Menu</button>
             </div>
 
-            <div class="hover-area" onmouseover="triggerDynamicFileLinks()">
-                <h4>Zone 3: Dynamic Link Generation</h4>
-                <p>Hover here to create and click dynamic file links</p>
-                <div id="dynamic-links-container"></div>
+            <div class="section">
+                <h3 class="section-title">Method 3: Frame & Window Manipulation</h3>
+                <button onclick="testIframeSandboxBypass()">Iframe Sandbox Bypass</button>
+                <button onclick="testWindowOpenBypass()">window.open with file://</button>
+                <button onclick="testLocationReplaceBypass()">location.replace()</button>
+                <button onclick="testPostMessageBypass()">PostMessage to Iframe</button>
             </div>
 
-            <div class="hover-area" onmouseover="triggerAllFileStrategies()">
-                <h4>Zone 4: Multi-Strategy Attack</h4>
-                <p>Hover here to try multiple click strategies simultaneously</p>
+            <div class="section">
+                <h3 class="section-title">Method 4: Protocol Handler Tricks</h3>
+                <button onclick="testCustomProtocol()">Custom Protocol Handler</button>
+                <button onclick="testFileSystemAPI()">File System Access API</button>
+                <button onclick="testBlobURLs()">Blob URLs with file://</button>
+                <button onclick="testDataURIRedirect()">Data URI Redirect</button>
             </div>
 
-            <button onclick="enableAutoHover()">Enable Auto-Hover Simulation</button>
-            <button onclick="disableAutoHover()">Disable Auto-Hover</button>
-            <button onclick="resetAllLinks()">Reset All Links</button>
+            <div class="section">
+                <h3 class="section-title">Method 5: Browser-Specific Exploits</h3>
+                <button onclick="testSafariSpecific()">Safari-Specific Methods</button>
+                <button onclick="testChromeSpecific()">Chrome-Specific Methods</button>
+                <button onclick="testFirefoxSpecific()">Firefox-Specific Methods</button>
+            </div>
+
+            <button onclick="runAllTests()">🚀 Run All Bypass Tests</button>
+            <button onclick="clearLog()">🗑️ Clear Log</button>
         </div>
 
         <div class="status" id="status">
-            Status: Hover over colored zones to trigger file link clicks...
+            Status: Ready to test file protocol bypass methods...
         </div>
     </div>
 
     <script>
         const statusElement = document.getElementById('status');
-        let hoverCount = 0;
-        let autoHoverInterval = null;
+        let testCount = 0;
 
         function log(message, type = 'info') {
             const entry = document.createElement('div');
@@ -126,197 +142,345 @@
             statusElement.scrollTop = statusElement.scrollHeight;
         }
 
-        function triggerFileClicks(containerElement) {
-            hoverCount++;
-            log(`🔄 Hover #${hoverCount} detected in zone`, 'warning');
+        function clearLog() {
+            statusElement.innerHTML = 'Status: Log cleared...';
+        }
+
+        // Method 2: User Gesture Bypass Attempts
+        function testUserGestureBypass() {
+            testCount++;
+            log(`🔄 Test ${testCount}: User Gesture + setTimeout Bypass`, 'warning');
             
-            const fileLinks = containerElement.querySelectorAll('a[href^="file://"]');
-            
-            if (fileLinks.length > 0) {
-                log(`✅ Found ${fileLinks.length} file links in this zone`, 'success');
+            // Immediate click after user gesture
+            try {
+                const link = document.createElement('a');
+                link.href = 'file:///Users/Shared/';
+                document.body.appendChild(link);
                 
-                fileLinks.forEach((link, index) => {
-                    setTimeout(() => {
-                        const filename = link.getAttribute('data-filename') || link.href;
-                        log(`🖱️ Hover-clicking: ${filename}`, 'warning');
-                        
-                        // Visual feedback
-                        link.classList.remove('clicked', 'failed');
-                        link.classList.add('clicked');
-                        
-                        try {
-                            link.click();
-                            log(`✅ Click dispatched for: ${filename}`, 'success');
-                            log('💡 If Finder opens, this is a security finding!', 'warning');
-                        } catch (e) {
-                            log(`❌ Click failed: ${e.message}`, 'error');
-                            link.classList.remove('clicked');
-                            link.classList.add('failed');
-                        }
-                    }, index * 300);
-                });
-            } else {
-                log('❌ No file links found in this zone', 'error');
-            }
-        }
-
-        function triggerDynamicFileLinks() {
-            hoverCount++;
-            log(`🔄 Hover #${hoverCount} - Generating dynamic file links`, 'warning');
-            
-            const container = document.getElementById('dynamic-links-container');
-            const dynamicPaths = [
-                'file:///Users/Shared/',
-                'file:///Applications/',
-                'file:///System/',
-                'file:///Users/'
-            ];
-            
-            dynamicPaths.forEach((path, index) => {
-                setTimeout(() => {
-                    try {
-                        const dynamicLink = document.createElement('a');
-                        dynamicLink.href = path;
-                        dynamicLink.textContent = `🔗 ${path}`;
-                        dynamicLink.className = 'file-link';
-                        dynamicLink.style.margin = '5px';
-                        dynamicLink.style.display = 'inline-block';
-                        
-                        container.appendChild(dynamicLink);
-                        log(`📝 Created dynamic link: ${path}`, 'info');
-                        
-                        // Click immediately after creation
-                        setTimeout(() => {
-                            log(`🖱️ Clicking dynamic link: ${path}`, 'warning');
-                            dynamicLink.click();
-                            dynamicLink.classList.add('clicked');
-                        }, 100);
-                        
-                    } catch (e) {
-                        log(`❌ Dynamic link creation failed: ${e.message}`, 'error');
-                    }
-                }, index * 400);
-            });
-        }
-
-        function triggerAllFileStrategies() {
-            hoverCount++;
-            log(`🔄 Hover #${hoverCount} - Multi-strategy attack`, 'critical');
-            
-            // Strategy 1: Click existing links
-            const allFileLinks = document.querySelectorAll('a[href^="file://"]');
-            allFileLinks.forEach((link, index) => {
+                // Try immediate click
+                link.click();
+                log('✅ Immediate click after gesture attempted', 'success');
+                
+                // Try with minimal delay
                 setTimeout(() => {
                     link.click();
-                    link.classList.add('clicked');
-                }, index * 200);
+                    log('✅ Delayed click after gesture attempted', 'success');
+                }, 10);
+                
+                document.body.removeChild(link);
+            } catch(e) {
+                log(`❌ User gesture bypass failed: ${e.message}`, 'error');
+            }
+        }
+
+        function testDoubleClickBypass() {
+            testCount++;
+            log(`🔄 Test ${testCount}: Double-Click Handler`, 'warning');
+            
+            const link = document.createElement('a');
+            link.href = 'file:///Applications/';
+            link.textContent = 'Double-click me';
+            link.style.padding = '10px';
+            link.style.background = 'rgba(255,0,0,0.3)';
+            document.body.appendChild(link);
+            
+            let clickCount = 0;
+            link.addEventListener('click', (e) => {
+                clickCount++;
+                if (clickCount === 2) {
+                    log('🎯 Double-click detected, attempting bypass', 'critical');
+                    // Try to open in new context
+                    window.open('file:///Users/Shared/', '_blank');
+                }
+                setTimeout(() => { clickCount = 0; }, 300);
             });
             
-            // Strategy 2: Create and click dynamic links
-            setTimeout(() => {
-                const paths = ['file:///Users/Shared/', 'file:///Applications/'];
-                paths.forEach(path => {
-                    try {
-                        const link = document.createElement('a');
-                        link.href = path;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        log(`⚡ Direct dynamic click: ${path}`, 'warning');
-                    } catch (e) {
-                        log(`💥 Direct dynamic failed: ${e.message}`, 'error');
-                    }
-                });
-            }, 1000);
+            setTimeout(() => document.body.removeChild(link), 5000);
+        }
+
+        function testDragAndDropBypass() {
+            testCount++;
+            log(`🔄 Test ${testCount}: Drag & Drop Simulation`, 'warning');
             
-            // Strategy 3: Try window.location
-            setTimeout(() => {
-                log('🎯 Attempting window.location navigation', 'warning');
-                try {
+            const dropZone = document.createElement('div');
+            dropZone.style.padding = '20px';
+            dropZone.style.background = 'rgba(0,255,0,0.2)';
+            dropZone.style.border = '2px dashed green';
+            dropZone.textContent = 'Drop files here (simulated)';
+            document.body.appendChild(dropZone);
+            
+            // Simulate drop event with file URL
+            const dropEvent = new DragEvent('drop', {
+                dataTransfer: {
+                    items: [{
+                        kind: 'file',
+                        type: 'application/x-file-url'
+                    }]
+                }
+            });
+            
+            try {
+                dropZone.dispatchEvent(dropEvent);
+                log('✅ Drag & drop event dispatched', 'success');
+                
+                // Try to access through dataTransfer
+                setTimeout(() => {
                     window.location.href = 'file:///Users/Shared/';
-                } catch (e) {
-                    log(`❌ window.location failed: ${e.message}`, 'error');
+                }, 100);
+            } catch(e) {
+                log(`❌ Drag & drop failed: ${e.message}`, 'error');
+            }
+            
+            setTimeout(() => document.body.removeChild(dropZone), 3000);
+        }
+
+        function testContextMenuBypass() {
+            testCount++;
+            log(`🔄 Test ${testCount}: Context Menu Bypass`, 'warning');
+            
+            const element = document.createElement('div');
+            element.textContent = 'Right-click here';
+            element.style.padding = '15px';
+            element.style.background = 'rgba(255,255,0,0.3)';
+            element.style.border = '1px solid yellow';
+            document.body.appendChild(element);
+            
+            element.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                log('🎯 Context menu intercepted', 'critical');
+                
+                // Try to open file after context menu
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = 'file:///System/Library/CoreServices/';
+                    link.click();
+                }, 100);
+            });
+            
+            setTimeout(() => document.body.removeChild(element), 5000);
+        }
+
+        // Method 3: Frame & Window Manipulation
+        function testIframeSandboxBypass() {
+            testCount++;
+            log(`🔄 Test ${testCount}: Iframe Sandbox Bypass`, 'warning');
+            
+            try {
+                // Try different sandbox configurations
+                const iframe = document.createElement('iframe');
+                iframe.sandbox = 'allow-scripts allow-top-navigation';
+                iframe.src = 'file:///Users/Shared/';
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+                
+                setTimeout(() => {
+                    try {
+                        iframe.contentWindow.location.href = 'file:///Applications/';
+                        log('✅ Iframe navigation attempted', 'success');
+                    } catch(e) {
+                        log(`❌ Iframe navigation blocked: ${e.message}`, 'error');
+                    }
+                    document.body.removeChild(iframe);
+                }, 1000);
+            } catch(e) {
+                log(`❌ Iframe creation failed: ${e.message}`, 'error');
+            }
+        }
+
+        function testWindowOpenBypass() {
+            testCount++;
+            log(`🔄 Test ${testCount}: window.open Bypass`, 'warning');
+            
+            try {
+                const newWindow = window.open('file:///Users/Shared/', '_blank');
+                if (newWindow) {
+                    log('✅ window.open succeeded!', 'critical');
+                    setTimeout(() => newWindow.close(), 1000);
+                } else {
+                    log('❌ window.open was blocked', 'error');
                 }
-            }, 1500);
-        }
-
-        function enableAutoHover() {
-            if (autoHoverInterval) {
-                log('❌ Auto-hover already running', 'warning');
-                return;
-            }
-            
-            log('🤖 Starting auto-hover simulation...', 'warning');
-            let simulationCount = 0;
-            
-            autoHoverInterval = setInterval(() => {
-                simulationCount++;
-                const zones = document.querySelectorAll('.hover-area');
-                const randomZone = zones[Math.floor(Math.random() * zones.length)];
-                
-                log(`🤖 Auto-hover simulation #${simulationCount}`, 'info');
-                
-                // Trigger hover event
-                randomZone.dispatchEvent(new Event('mouseover'));
-                
-                // Stop after 10 simulations
-                if (simulationCount >= 10) {
-                    disableAutoHover();
-                    log('🛑 Auto-hover simulation completed', 'success');
-                }
-            }, 2000);
-        }
-
-        function disableAutoHover() {
-            if (autoHoverInterval) {
-                clearInterval(autoHoverInterval);
-                autoHoverInterval = null;
-                log('🛑 Auto-hover simulation stopped', 'success');
+            } catch(e) {
+                log(`❌ window.open failed: ${e.message}`, 'error');
             }
         }
 
-        function resetAllLinks() {
-            const fileLinks = document.querySelectorAll('.file-link');
-            fileLinks.forEach(link => {
-                link.classList.remove('clicked', 'failed');
-            });
+        function testLocationReplaceBypass() {
+            testCount++;
+            log(`🔄 Test ${testCount}: location.replace() Bypass`, 'warning');
             
-            const dynamicContainer = document.getElementById('dynamic-links-container');
-            dynamicContainer.innerHTML = '';
-            
-            log('🔄 All links reset to initial state', 'success');
+            try {
+                location.replace('file:///Users/Shared/');
+                log('✅ location.replace attempted', 'success');
+            } catch(e) {
+                log(`❌ location.replace failed: ${e.message}`, 'error');
+            }
         }
 
-        // Monitor all click events
-        document.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A' && e.target.href.startsWith('file://')) {
-                log('🎯 File link click intercepted by browser', 'warning');
+        function testPostMessageBypass() {
+            testCount++;
+            log(`🔄 Test ${testCount}: PostMessage Bypass`, 'warning');
+            
+            try {
+                const iframe = document.createElement('iframe');
+                iframe.src = 'about:blank';
+                document.body.appendChild(iframe);
+                
+                iframe.onload = () => {
+                    iframe.contentWindow.postMessage({
+                        type: 'navigate',
+                        url: 'file:///Users/Shared/'
+                    }, '*');
+                    log('✅ PostMessage sent to iframe', 'success');
+                };
+                
+                setTimeout(() => document.body.removeChild(iframe), 2000);
+            } catch(e) {
+                log(`❌ PostMessage failed: ${e.message}`, 'error');
+            }
+        }
+
+        // Method 4: Protocol Handler Tricks
+        function testCustomProtocol() {
+            testCount++;
+            log(`🔄 Test ${testCount}: Custom Protocol Handler`, 'warning');
+            
+            // Try to register a custom protocol handler
+            try {
+                navigator.registerProtocolHandler('file', '/handler.html#%s', 'File Handler');
+                log('✅ Custom protocol handler registered', 'success');
+            } catch(e) {
+                log(`❌ Protocol handler registration failed: ${e.message}`, 'error');
+            }
+            
+            // Try x-file-protocol (older Safari)
+            try {
+                window.location.href = 'x-file-protocol://Users/Shared/';
+                log('✅ x-file-protocol attempted', 'success');
+            } catch(e) {
+                log(`❌ x-file-protocol failed: ${e.message}`, 'error');
+            }
+        }
+
+        function testFileSystemAPI() {
+            testCount++;
+            log(`🔄 Test ${testCount}: File System Access API`, 'warning');
+            
+            if ('showDirectoryPicker' in window) {
+                log('✅ File System Access API available', 'success');
+                // This requires user gesture and is more legitimate
+            } else {
+                log('❌ File System Access API not available', 'error');
+            }
+        }
+
+        function testBlobURLs() {
+            testCount++;
+            log(`🔄 Test ${testCount}: Blob URL Redirect`, 'warning');
+            
+            try {
+                // Create a blob with file URL and try to redirect
+                const blob = new Blob([`<html><body><script>window.location='file:///Users/Shared/'</script></body></html>`], 
+                    {type: 'text/html'});
+                const blobUrl = URL.createObjectURL(blob);
+                window.open(blobUrl, '_blank');
+                log('✅ Blob URL with file:// redirect attempted', 'success');
+            } catch(e) {
+                log(`❌ Blob URL method failed: ${e.message}`, 'error');
+            }
+        }
+
+        function testDataURIRedirect() {
+            testCount++;
+            log(`🔄 Test ${testCount}: Data URI Redirect`, 'warning');
+            
+            try {
+                const dataUri = `data:text/html,<script>window.location='file:///Users/Shared/'</script>`;
+                window.open(dataUri, '_blank');
+                log('✅ Data URI redirect attempted', 'success');
+            } catch(e) {
+                log(`❌ Data URI method failed: ${e.message}`, 'error');
+            }
+        }
+
+        // Method 5: Browser-Specific
+        function testSafariSpecific() {
+            testCount++;
+            log(`🔄 Test ${testCount}: Safari-Specific Methods`, 'warning');
+            
+            // Safari sometimes has different security rules
+            try {
+                // Try webkit specific methods
+                window.open('file:///Users/Shared/', '_self');
+                log('✅ Safari-specific window.open attempted', 'success');
+            } catch(e) {
+                log(`❌ Safari method failed: ${e.message}`, 'error');
+            }
+        }
+
+        function testChromeSpecific() {
+            testCount++;
+            log(`🔄 Test ${testCount}: Chrome-Specific Methods`, 'warning');
+            
+            try {
+                // Chrome extensions can access file://, but regular pages can't
+                chrome.runtime?.sendMessage({type: 'openFile', url: 'file:///Users/Shared/'});
+                log('✅ Chrome extension API attempted', 'success');
+            } catch(e) {
+                log(`❌ Chrome method failed (expected without extension): ${e.message}`, 'error');
+            }
+        }
+
+        function testFirefoxSpecific() {
+            testCount++;
+            log(`🔄 Test ${testCount}: Firefox-Specific Methods`, 'warning');
+            
+            try {
+                // Firefox sometimes allows file:// in certain contexts
+                window.location.href = 'file:///Users/Shared/';
+                log('✅ Firefox location redirect attempted', 'success');
+            } catch(e) {
+                log(`❌ Firefox method failed: ${e.message}`, 'error');
+            }
+        }
+
+        function runAllTests() {
+            log('🚀 STARTING COMPREHENSIVE BYPASS TEST SUITE', 'critical');
+            
+            const tests = [
+                testUserGestureBypass,
+                testDoubleClickBypass,
+                testDragAndDropBypass,
+                testContextMenuBypass,
+                testIframeSandboxBypass,
+                testWindowOpenBypass,
+                testLocationReplaceBypass,
+                testPostMessageBypass,
+                testCustomProtocol,
+                testFileSystemAPI,
+                testBlobURLs,
+                testDataURIRedirect,
+                testSafariSpecific,
+                testChromeSpecific,
+                testFirefoxSpecific
+            ];
+            
+            tests.forEach((test, index) => {
+                setTimeout(() => test(), index * 2000);
+            });
+        }
+
+        // Monitor all attempts
+        window.addEventListener('error', (e) => {
+            if (e.message.includes('local resource')) {
+                log(`🛡️ SECURITY BLOCKED: ${e.message}`, 'critical');
             }
         });
 
-        // Listen for navigation attempts
-        window.addEventListener('beforeunload', () => {
-            log('🚨 PAGE NAVIGATION ATTEMPT DETECTED!', 'critical');
-        });
+        log('🔧 Advanced file protocol bypass tests initialized', 'info');
+        log('💡 These tests attempt various methods to bypass file:// restrictions', 'warning');
+        log('⚠️ Most will fail due to browser security policies', 'success');
+        log('🎯 Look for any methods that succeed - these would be security findings', 'critical');
 
-        // Add some visual feedback for hover areas
-        document.querySelectorAll('.hover-area').forEach(area => {
-            area.addEventListener('mouseenter', function() {
-                this.style.borderColor = 'rgba(255,255,255,0.5)';
-                this.style.background = 'rgba(255,255,255,0.1)';
-            });
-            
-            area.addEventListener('mouseleave', function() {
-                this.style.borderColor = 'rgba(255,255,255,0.2)';
-                this.style.background = 'rgba(255,255,255,0.05)';
-            });
-        });
-
-        // Initial logging
-        log('🔧 Initialized hover-click file protocol tests', 'info');
-        log('💡 Hover over colored zones to trigger automatic file link clicks', 'warning');
-        log('🎯 This tests if file:// URLs can be triggered without direct user clicks', 'critical');
-        log('⚠️ Browsers typically block file:// navigation from web pages for security', 'success');
     </script>
 </body>
 </html>
