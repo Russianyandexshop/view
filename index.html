@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Launch Auto-Click Test</title>
+    <title>File Protocol Auto-Click Test</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -19,7 +19,7 @@
             border-radius: 10px;
             margin: 20px 0;
         }
-        .app-link {
+        .file-link {
             display: block;
             padding: 15px;
             margin: 10px 0;
@@ -29,21 +29,8 @@
             text-decoration: none;
             border: 1px solid #4285f4;
         }
-        .app-link:hover {
-            background: rgba(66, 133, 244, 0.5);
-        }
-        .file-link {
-            display: block;
-            padding: 15px;
-            margin: 10px 0;
-            background: rgba(234, 67, 53, 0.3);
-            border-radius: 5px;
-            color: white;
-            text-decoration: none;
-            border: 1px solid #ea4335;
-        }
         .file-link:hover {
-            background: rgba(234, 67, 53, 0.5);
+            background: rgba(66, 133, 244, 0.5);
         }
         .status {
             background: rgba(0,0,0,0.5);
@@ -57,56 +44,32 @@
         .success { color: #00ff88; }
         .warning { color: #ffaa00; }
         .error { color: #ff4444; }
-        .critical { color: #ff4444; font-weight: bold; }
-        .info { color: #4285f4; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚀 App & File Launch Auto-Click Test</h1>
+        <h1>📁 File Protocol Auto-Click Test</h1>
         
         <div class="test-area">
-            <h3>Test App Launch Links</h3>
+            <h3>Test File Links</h3>
+            <a href="file:///Users/Shared/" class="file-link">📂 file:///Users/Shared/</a>
+            <a href="file:///Applications/" class="file-link">📂 file:///Applications/</a>
+            <a href="file:///System/Library/CoreServices/" class="file-link">📂 file:///System/Library/CoreServices/</a>
+            <a href="file:///Applications/" class="file-link">🌐 file:///Applications/ (Control)</a>
             
-            <!-- Common macOS app URL schemes -->
-            <a href="safari://" class="app-link">🌐 safari://</a>
-            <a href="safari://open?url=https://apple.com" class="app-link">🌐 safari://open?url=https://apple.com</a>
-            <a href="x-apple-music://" class="app-link">🎵 x-apple-music://</a>
-            <a href="facetime://+1234567890" class="app-link">📞 facetime://+1234567890</a>
-            <a href="mailto:test@example.com" class="app-link">📧 mailto:test@example.com</a>
-            <a href="messages://" class="app-link">💬 messages://</a>
-            <a href="maps://" class="app-link">🗺️ maps://</a>
-            <a href="itms-apps://" class="app-link">📱 itms-apps:// (App Store)</a>
-            <a href="itms://" class="app-link">📱 itms:// (iTunes Store)</a>
-            
-            <!-- Custom app schemes (if any are registered) -->
-            <a href="twitter://" class="app-link">🐦 twitter://</a>
-            <a href="whatsapp://" class="app-link">💚 whatsapp://</a>
-            <a href="spotify://" class="app-link">🎶 spotify://</a>
-
-            <!-- File protocol links for testing -->
-            <h3 style="margin-top: 30px;">Test File Protocol Links</h3>
-            <a href="file:///Users/Shared/" class="file-link" aria-label="Open file:///Users/Shared/">📁 file:///Users/Shared/ (aria-label)</a>
-            <a href="file:///Users/Shared/" class="file-link" title="Shared Folder">📁 file:///Users/Shared/ (title)</a>
-            <a href="file:///Users/Shared/" class="file-link">📁 file:///Users/Shared/ (basic)</a>
-            <button class="file-link" onclick="window.location.href='file:///Users/Shared/'">📁 Button to file:///Users/Shared/</button>
-            
-            <button onclick="startAppAutoClicker()">Start App Auto-Clicker</button>
-            <button onclick="startFileAutoClicker()">Start File Auto-Clicker</button>
-            <button onclick="stopAllAutoClickers()">Stop All Auto-Clickers</button>
+            <button onclick="startAutoClicker()">Start Auto-Clicker</button>
+            <button onclick="stopAutoClicker()">Stop Auto-Clicker</button>
         </div>
 
         <div class="status" id="status">
-            Status: Testing automated app and file launch clicking...
+            Status: Testing automated file link clicking...
         </div>
     </div>
 
     <script>
         const statusElement = document.getElementById('status');
-        let appAutoClickerInterval = null;
-        let fileAutoClickerInterval = null;
-        let appClickCount = 0;
-        let fileClickCount = 0;
+        let autoClickerInterval = null;
+        let clickCount = 0;
 
         function log(message, type = 'info') {
             const entry = document.createElement('div');
@@ -116,39 +79,28 @@
             statusElement.scrollTop = statusElement.scrollHeight;
         }
 
-        function startAppAutoClicker() {
-            if (appAutoClickerInterval) {
-                log('❌ App auto-clicker already running', 'warning');
+        function startAutoClicker() {
+            if (autoClickerInterval) {
+                log('❌ Auto-clicker already running', 'warning');
                 return;
             }
 
-            log('🚀 Starting app launch auto-clicker...', 'warning');
-            log('⚠️ Will attempt to click app links every 3 seconds', 'warning');
+            log('🚀 Starting file link auto-clicker...', 'warning');
+            log('⚠️ Will attempt to click file:// links every 5 seconds', 'warning');
 
-            appAutoClickerInterval = setInterval(() => {
-                appClickCount++;
-                log(`🔄 App auto-click attempt #${appClickCount}`, 'info');
+            autoClickerInterval = setInterval(() => {
+                clickCount++;
+                log(`🔄 Auto-click attempt #${clickCount}`, 'info');
                 
-                // Strategy 1: Click all app scheme links
-                const appSchemes = [
-                    'safari://', 'x-apple-music://', 'facetime://', 'mailto:',
-                    'messages://', 'maps://', 'itms-apps://', 'itms://',
-                    'twitter://', 'whatsapp://', 'spotify://'
-                ];
+                // Strategy 1: Click all file:// links
+                const fileLinks = document.querySelectorAll('a[href^="file://"]');
                 
-                let foundLinks = [];
-                
-                appSchemes.forEach(scheme => {
-                    const links = document.querySelectorAll(`a[href^="${scheme}"]`);
-                    links.forEach(link => foundLinks.push(link));
-                });
-                
-                if (foundLinks.length > 0) {
-                    log(`✅ Found ${foundLinks.length} app launch links`, 'success');
+                if (fileLinks.length > 0) {
+                    log(`✅ Found ${fileLinks.length} file:// links`, 'success');
                     
-                    foundLinks.forEach((link, index) => {
+                    fileLinks.forEach((link, index) => {
                         setTimeout(() => {
-                            log(`🖱️ Clicking app link: ${link.href}`, 'warning');
+                            log(`🖱️ Clicking: ${link.href}`, 'warning');
                             
                             // Visual feedback
                             const originalBg = link.style.backgroundColor;
@@ -157,195 +109,78 @@
                             setTimeout(() => {
                                 try {
                                     link.click();
-                                    log(`✅ App link click dispatched: ${link.href}`, 'success');
-                                    log('💡 If app opens, this is a security issue!', 'critical');
+                                    log(`✅ Click dispatched for: ${link.href}`, 'success');
                                 } catch (e) {
-                                    log(`❌ App link click failed: ${e.message}`, 'error');
+                                    log(`❌ Click failed: ${e.message}`, 'error');
                                 }
                                 link.style.backgroundColor = originalBg;
                             }, 100);
                             
-                        }, index * 500);
+                        }, index * 1000);
                     });
                 } else {
-                    log('❌ No app launch links found', 'error');
+                    log('❌ No file:// links found', 'error');
                 }
                 
-                // Strategy 2: Try window.location with app schemes
-                if (appClickCount % 3 === 0) {
-                    const testSchemes = [
-                        'safari://',
-                        'facetime://+1234567890',
-                        'mailto:test@example.com'
-                    ];
-                    
-                    testSchemes.forEach(scheme => {
-                        setTimeout(() => {
-                            log(`🔄 Trying window.location: ${scheme}`, 'info');
-                            try {
-                                window.location.href = scheme;
-                                log(`✅ window.location attempted: ${scheme}`, 'success');
-                            } catch (e) {
-                                log(`❌ window.location failed: ${e.message}`, 'error');
-                            }
-                        }, 1500);
-                    });
-                }
-                
-                // Strategy 3: Try window.open with app schemes
-                if (appClickCount % 4 === 0) {
-                    setTimeout(() => {
-                        log('🔄 Trying window.open with app schemes', 'info');
-                        try {
-                            const newWindow = window.open('safari://', '_blank');
-                            if (newWindow) {
-                                log('✅ window.open succeeded (app may launch)', 'success');
-                            } else {
-                                log('❌ window.open was blocked', 'error');
-                            }
-                        } catch (e) {
-                            log(`❌ window.open error: ${e.message}`, 'error');
-                        }
-                    }, 6000);
-                }
-                
-            }, 6000); // 3 seconds
-
-            log('✅ App auto-clicker started', 'success');
-        }
-
-        function startFileAutoClicker() {
-            if (fileAutoClickerInterval) {
-                log('❌ File auto-clicker already running', 'warning');
-                return;
-            }
-
-            log('📁 Starting file protocol auto-clicker...', 'warning');
-            log('⚠️ Will attempt to click file:// links every 50 seconds', 'warning');
-
-            fileAutoClickerInterval = setInterval(() => {
-                fileClickCount++;
-                log(`📁 File auto-click attempt #${fileClickCount}`, 'info');
-                
-                // Enhanced selector strategy for file links
-                const selectors = [
-                    'a[aria-label*="file:///Users/Shared/"]',
-                    'a[href*="file:///Users/Shared/"]',
-                    'a[title*="Shared"]',
-                    'button[aria-label*="Shared"]',
-                    '[onclick*="file:///Users/Shared/"]'
-                ];
-                
-                let clicked = false;
-                
-                for (const selector of selectors) {
-                    const element = document.querySelector(selector);
-                    if (element) {
-                        log(`🖱️ Clicking file link with selector: ${selector}`, 'warning');
-                        
-                        // Visual feedback
-                        const originalBg = element.style.backgroundColor;
-                        element.style.backgroundColor = '#ea4335';
-                        
-                        try {
-                            element.click();
-                            log(`✅ File link click dispatched: ${selector}`, 'success');
-                            log('💡 If file opens in Finder, this is a security finding!', 'critical');
-                            clicked = true;
-                        } catch (e) {
-                            log(`❌ File link click failed: ${e.message}`, 'error');
-                        }
-                        
-                        setTimeout(() => {
-                            element.style.backgroundColor = originalBg;
-                        }, 1000);
-                        
-                        break;
-                    }
-                }
-                
-                if (!clicked) {
-                    log('❌ No file protocol links found with current selectors', 'error');
-                }
-                
-            }, 5000); // 50 seconds
-
-            log('✅ File auto-clicker started', 'success');
-        }
-
-        function stopAllAutoClickers() {
-            let stopped = false;
-            
-            if (appAutoClickerInterval) {
-                clearInterval(appAutoClickerInterval);
-                appAutoClickerInterval = null;
-                log('🛑 App auto-clicker stopped', 'success');
-                stopped = true;
-            }
-            
-            if (fileAutoClickerInterval) {
-                clearInterval(fileAutoClickerInterval);
-                fileAutoClickerInterval = null;
-                log('🛑 File auto-clicker stopped', 'success');
-                stopped = true;
-            }
-            
-            if (!stopped) {
-                log('ℹ️ No auto-clickers were running', 'info');
-            }
-        }
-
-        // Monitor for app launch attempts
-        document.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A' && e.target.href) {
-                const href = e.target.href;
-                if (href.startsWith('safari://') || href.startsWith('facetime://') || 
-                    href.startsWith('mailto:') || href.startsWith('x-apple-music://')) {
-                    log(`🎯 App link click detected: ${href}`, 'warning');
-                } else if (href.startsWith('file://')) {
-                    log(`📁 File link click detected: ${href}`, 'critical');
-                }
-            }
-        });
-
-        // Listen for page navigation (would trigger if app launches)
-        window.addEventListener('beforeunload', (e) => {
-            log('🚨 PAGE NAVIGATION DETECTED - App or file may be launching!', 'critical');
-            // Don't prevent default - we want to see if navigation happens
-        });
-
-        // Test iframes with app schemes (another potential vector)
-        function testIframeAppLaunch() {
-            log('🔄 Testing iframe app launches...', 'info');
-            const appSchemes = ['safari://', 'facetime://+1234567890'];
-            
-            appSchemes.forEach(scheme => {
-                setTimeout(() => {
+                // Strategy 2: Try to create and click file links dynamically
+                if (clickCount % 2 === 0) {
                     try {
-                        const iframe = document.createElement('iframe');
-                        iframe.style.display = 'none';
-                        iframe.src = scheme;
-                        document.body.appendChild(iframe);
-                        log(`✅ Iframe created with: ${scheme}`, 'success');
-                        setTimeout(() => document.body.removeChild(iframe), 1000);
+                        const dynamicLink = document.createElement('a');
+                        dynamicLink.href = 'file:///Users/Shared/';
+                        dynamicLink.textContent = 'Dynamic File Link';
+                        dynamicLink.style.display = 'none';
+                        document.body.appendChild(dynamicLink);
+                        
+                        log('🔄 Trying to click dynamically created file link', 'info');
+                        dynamicLink.click();
+                        document.body.removeChild(dynamicLink);
+                        
                     } catch (e) {
-                        log(`❌ Iframe failed: ${e.message}`, 'error');
+                        log(`❌ Dynamic link click failed: ${e.message}`, 'error');
                     }
-                }, 500);
-            });
+                }
+                
+            }, 5000); // 5 seconds
+
+            log('✅ Auto-clicker started', 'success');
         }
 
-        // Auto-start with delay
-        setTimeout(() => {
-            log('🔧 Initializing app and file launch tests...', 'info');
-            log('💡 App schemes often have different security rules than file://', 'warning');
-            log('🎯 If apps or files open automatically, this is a significant finding!', 'critical');
-            
-            setTimeout(startAppAutoClicker, 2000);
-            setTimeout(startFileAutoClicker, 10000); // Start file clicker after 10 seconds
-            setTimeout(testIframeAppLaunch, 5000);
-        }, 1000);
+        function stopAutoClicker() {
+            if (autoClickerInterval) {
+                clearInterval(autoClickerInterval);
+                autoClickerInterval = null;
+                log('🛑 Auto-clicker stopped', 'success');
+            }
+        }
 
+        // Monitor link clicks and navigation attempts
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A' && e.target.href.startsWith('file://')) {
+                log('🎯 File link click intercepted', 'warning');
+                // Browsers will typically block this navigation
+            }
+        });
+
+        // Listen for beforeunload (would trigger if navigation succeeds)
+        window.addEventListener('beforeunload', () => {
+            log('🚨 PAGE NAVIGATION ATTEMPT DETECTED!', 'critical');
+        });
+
+        // Test what happens with regular HTTP links (should work)
+        setTimeout(() => {
+            const httpLink = document.querySelector('a[href="https://google.com"]');
+            if (httpLink) {
+                log('🔗 Testing regular HTTP link click...', 'info');
+                setTimeout(() => {
+                    httpLink.click();
+                    log('✅ HTTP link click should work normally', 'success');
+                }, 2000);
+            }
+        }, 3000);
+
+        log('🔧 Initialized file protocol click tests', 'info');
+        log('💡 Browsers typically BLOCK file:// navigation from web pages', 'warning');
+        log('🎯 This is a security feature to protect local files', 'success');
     </script>
 </body>
 </html>
