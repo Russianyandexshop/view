@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Protocol Auto-Click Test</title>
+    <title>File Protocol Hover-Click Test</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -28,9 +28,20 @@
             color: white;
             text-decoration: none;
             border: 1px solid #4285f4;
+            transition: all 0.3s ease;
         }
         .file-link:hover {
             background: rgba(66, 133, 244, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .file-link.clicked {
+            background: rgba(52, 168, 83, 0.7) !important;
+            border-color: #34a853;
+        }
+        .file-link.failed {
+            background: rgba(234, 67, 53, 0.7) !important;
+            border-color: #ea4335;
         }
         .status {
             background: rgba(0,0,0,0.5);
@@ -44,32 +55,68 @@
         .success { color: #00ff88; }
         .warning { color: #ffaa00; }
         .error { color: #ff4444; }
+        .hover-area {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px dashed rgba(255,255,255,0.2);
+        }
+        .hover-instructions {
+            text-align: center;
+            color: #ffaa00;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📁 File Protocol Auto-Click Test</h1>
+        <h1>📁 File Protocol Hover-Click Test</h1>
         
         <div class="test-area">
-            <h3>Test File Links</h3>
-            <a href="file:///Users/Shared/" class="file-link">📂 file:///Users/Shared/</a>
-            <a href="file:///Applications/" class="file-link">📂 file:///Applications/</a>
-            <a href="file:///System/Library/CoreServices/" class="file-link">📂 file:///System/Library/CoreServices/</a>
-            <a href="file:///Applications/" class="file-link">🌐 file:///Applications/ (Control)</a>
+            <h3>Hover Over These Areas to Trigger File Link Clicks</h3>
             
-            <button onclick="startAutoClicker()">Start Auto-Clicker</button>
-            <button onclick="stopAutoClicker()">Stop Auto-Clicker</button>
+            <div class="hover-instructions">✨ Hover over any colored area below to automatically click file links ✨</div>
+            
+            <div class="hover-area" onmouseover="triggerFileClicks(this)">
+                <h4>Zone 1: Direct File Links</h4>
+                <a href="file:///Users/Shared/" class="file-link" data-filename="Shared Folder">📂 file:///Users/Shared/</a>
+                <a href="file:///Applications/" class="file-link" data-filename="Applications">📂 file:///Applications/</a>
+                <a href="file:///System/Library/CoreServices/" class="file-link" data-filename="CoreServices">📂 file:///System/Library/CoreServices/</a>
+            </div>
+
+            <div class="hover-area" onmouseover="triggerFileClicks(this)">
+                <h4>Zone 2: Additional File Links</h4>
+                <a href="file:///Users/" class="file-link" data-filename="Users">📂 file:///Users/</a>
+                <a href="file:///tmp/" class="file-link" data-filename="Temp">📂 file:///tmp/</a>
+                <a href="file:///Library/" class="file-link" data-filename="Library">📂 file:///Library/</a>
+            </div>
+
+            <div class="hover-area" onmouseover="triggerDynamicFileLinks()">
+                <h4>Zone 3: Dynamic Link Generation</h4>
+                <p>Hover here to create and click dynamic file links</p>
+                <div id="dynamic-links-container"></div>
+            </div>
+
+            <div class="hover-area" onmouseover="triggerAllFileStrategies()">
+                <h4>Zone 4: Multi-Strategy Attack</h4>
+                <p>Hover here to try multiple click strategies simultaneously</p>
+            </div>
+
+            <button onclick="enableAutoHover()">Enable Auto-Hover Simulation</button>
+            <button onclick="disableAutoHover()">Disable Auto-Hover</button>
+            <button onclick="resetAllLinks()">Reset All Links</button>
         </div>
 
         <div class="status" id="status">
-            Status: Testing automated file link clicking...
+            Status: Hover over colored zones to trigger file link clicks...
         </div>
     </div>
 
     <script>
         const statusElement = document.getElementById('status');
-        let autoClickerInterval = null;
-        let clickCount = 0;
+        let hoverCount = 0;
+        let autoHoverInterval = null;
 
         function log(message, type = 'info') {
             const entry = document.createElement('div');
@@ -79,108 +126,197 @@
             statusElement.scrollTop = statusElement.scrollHeight;
         }
 
-        function startAutoClicker() {
-            if (autoClickerInterval) {
-                log('❌ Auto-clicker already running', 'warning');
-                return;
+        function triggerFileClicks(containerElement) {
+            hoverCount++;
+            log(`🔄 Hover #${hoverCount} detected in zone`, 'warning');
+            
+            const fileLinks = containerElement.querySelectorAll('a[href^="file://"]');
+            
+            if (fileLinks.length > 0) {
+                log(`✅ Found ${fileLinks.length} file links in this zone`, 'success');
+                
+                fileLinks.forEach((link, index) => {
+                    setTimeout(() => {
+                        const filename = link.getAttribute('data-filename') || link.href;
+                        log(`🖱️ Hover-clicking: ${filename}`, 'warning');
+                        
+                        // Visual feedback
+                        link.classList.remove('clicked', 'failed');
+                        link.classList.add('clicked');
+                        
+                        try {
+                            link.click();
+                            log(`✅ Click dispatched for: ${filename}`, 'success');
+                            log('💡 If Finder opens, this is a security finding!', 'warning');
+                        } catch (e) {
+                            log(`❌ Click failed: ${e.message}`, 'error');
+                            link.classList.remove('clicked');
+                            link.classList.add('failed');
+                        }
+                    }, index * 300);
+                });
+            } else {
+                log('❌ No file links found in this zone', 'error');
             }
+        }
 
-            log('🚀 Starting file link auto-clicker...', 'warning');
-            log('⚠️ Will attempt to click file:// links every 5 seconds', 'warning');
-
-            autoClickerInterval = setInterval(() => {
-                clickCount++;
-                log(`🔄 Auto-click attempt #${clickCount}`, 'info');
-                
-                // Strategy 1: Click all file:// links
-                const fileLinks = document.querySelectorAll('a[href^="file://"]');
-                
-                if (fileLinks.length > 0) {
-                    log(`✅ Found ${fileLinks.length} file:// links`, 'success');
-                    
-                    fileLinks.forEach((link, index) => {
-                        setTimeout(() => {
-                            log(`🖱️ Clicking: ${link.href}`, 'warning');
-                            
-                            // Visual feedback
-                            const originalBg = link.style.backgroundColor;
-                            link.style.backgroundColor = '#34a853';
-                            
-                            setTimeout(() => {
-                                try {
-                                    link.click();
-                                    log(`✅ Click dispatched for: ${link.href}`, 'success');
-                                } catch (e) {
-                                    log(`❌ Click failed: ${e.message}`, 'error');
-                                }
-                                link.style.backgroundColor = originalBg;
-                            }, 100);
-                            
-                        }, index * 1000);
-                    });
-                } else {
-                    log('❌ No file:// links found', 'error');
-                }
-                
-                // Strategy 2: Try to create and click file links dynamically
-                if (clickCount % 2 === 0) {
+        function triggerDynamicFileLinks() {
+            hoverCount++;
+            log(`🔄 Hover #${hoverCount} - Generating dynamic file links`, 'warning');
+            
+            const container = document.getElementById('dynamic-links-container');
+            const dynamicPaths = [
+                'file:///Users/Shared/',
+                'file:///Applications/',
+                'file:///System/',
+                'file:///Users/'
+            ];
+            
+            dynamicPaths.forEach((path, index) => {
+                setTimeout(() => {
                     try {
                         const dynamicLink = document.createElement('a');
-                        dynamicLink.href = 'file:///Users/Shared/';
-                        dynamicLink.textContent = 'Dynamic File Link';
-                        dynamicLink.style.display = 'none';
-                        document.body.appendChild(dynamicLink);
+                        dynamicLink.href = path;
+                        dynamicLink.textContent = `🔗 ${path}`;
+                        dynamicLink.className = 'file-link';
+                        dynamicLink.style.margin = '5px';
+                        dynamicLink.style.display = 'inline-block';
                         
-                        log('🔄 Trying to click dynamically created file link', 'info');
-                        dynamicLink.click();
-                        document.body.removeChild(dynamicLink);
+                        container.appendChild(dynamicLink);
+                        log(`📝 Created dynamic link: ${path}`, 'info');
+                        
+                        // Click immediately after creation
+                        setTimeout(() => {
+                            log(`🖱️ Clicking dynamic link: ${path}`, 'warning');
+                            dynamicLink.click();
+                            dynamicLink.classList.add('clicked');
+                        }, 100);
                         
                     } catch (e) {
-                        log(`❌ Dynamic link click failed: ${e.message}`, 'error');
+                        log(`❌ Dynamic link creation failed: ${e.message}`, 'error');
                     }
-                }
-                
-            }, 5000); // 5 seconds
-
-            log('✅ Auto-clicker started', 'success');
+                }, index * 400);
+            });
         }
 
-        function stopAutoClicker() {
-            if (autoClickerInterval) {
-                clearInterval(autoClickerInterval);
-                autoClickerInterval = null;
-                log('🛑 Auto-clicker stopped', 'success');
+        function triggerAllFileStrategies() {
+            hoverCount++;
+            log(`🔄 Hover #${hoverCount} - Multi-strategy attack`, 'critical');
+            
+            // Strategy 1: Click existing links
+            const allFileLinks = document.querySelectorAll('a[href^="file://"]');
+            allFileLinks.forEach((link, index) => {
+                setTimeout(() => {
+                    link.click();
+                    link.classList.add('clicked');
+                }, index * 200);
+            });
+            
+            // Strategy 2: Create and click dynamic links
+            setTimeout(() => {
+                const paths = ['file:///Users/Shared/', 'file:///Applications/'];
+                paths.forEach(path => {
+                    try {
+                        const link = document.createElement('a');
+                        link.href = path;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        log(`⚡ Direct dynamic click: ${path}`, 'warning');
+                    } catch (e) {
+                        log(`💥 Direct dynamic failed: ${e.message}`, 'error');
+                    }
+                });
+            }, 1000);
+            
+            // Strategy 3: Try window.location
+            setTimeout(() => {
+                log('🎯 Attempting window.location navigation', 'warning');
+                try {
+                    window.location.href = 'file:///Users/Shared/';
+                } catch (e) {
+                    log(`❌ window.location failed: ${e.message}`, 'error');
+                }
+            }, 1500);
+        }
+
+        function enableAutoHover() {
+            if (autoHoverInterval) {
+                log('❌ Auto-hover already running', 'warning');
+                return;
+            }
+            
+            log('🤖 Starting auto-hover simulation...', 'warning');
+            let simulationCount = 0;
+            
+            autoHoverInterval = setInterval(() => {
+                simulationCount++;
+                const zones = document.querySelectorAll('.hover-area');
+                const randomZone = zones[Math.floor(Math.random() * zones.length)];
+                
+                log(`🤖 Auto-hover simulation #${simulationCount}`, 'info');
+                
+                // Trigger hover event
+                randomZone.dispatchEvent(new Event('mouseover'));
+                
+                // Stop after 10 simulations
+                if (simulationCount >= 10) {
+                    disableAutoHover();
+                    log('🛑 Auto-hover simulation completed', 'success');
+                }
+            }, 2000);
+        }
+
+        function disableAutoHover() {
+            if (autoHoverInterval) {
+                clearInterval(autoHoverInterval);
+                autoHoverInterval = null;
+                log('🛑 Auto-hover simulation stopped', 'success');
             }
         }
 
-        // Monitor link clicks and navigation attempts
+        function resetAllLinks() {
+            const fileLinks = document.querySelectorAll('.file-link');
+            fileLinks.forEach(link => {
+                link.classList.remove('clicked', 'failed');
+            });
+            
+            const dynamicContainer = document.getElementById('dynamic-links-container');
+            dynamicContainer.innerHTML = '';
+            
+            log('🔄 All links reset to initial state', 'success');
+        }
+
+        // Monitor all click events
         document.addEventListener('click', (e) => {
             if (e.target.tagName === 'A' && e.target.href.startsWith('file://')) {
-                log('🎯 File link click intercepted', 'warning');
-                // Browsers will typically block this navigation
+                log('🎯 File link click intercepted by browser', 'warning');
             }
         });
 
-        // Listen for beforeunload (would trigger if navigation succeeds)
+        // Listen for navigation attempts
         window.addEventListener('beforeunload', () => {
             log('🚨 PAGE NAVIGATION ATTEMPT DETECTED!', 'critical');
         });
 
-        // Test what happens with regular HTTP links (should work)
-        setTimeout(() => {
-            const httpLink = document.querySelector('a[href="https://google.com"]');
-            if (httpLink) {
-                log('🔗 Testing regular HTTP link click...', 'info');
-                setTimeout(() => {
-                    httpLink.click();
-                    log('✅ HTTP link click should work normally', 'success');
-                }, 2000);
-            }
-        }, 3000);
+        // Add some visual feedback for hover areas
+        document.querySelectorAll('.hover-area').forEach(area => {
+            area.addEventListener('mouseenter', function() {
+                this.style.borderColor = 'rgba(255,255,255,0.5)';
+                this.style.background = 'rgba(255,255,255,0.1)';
+            });
+            
+            area.addEventListener('mouseleave', function() {
+                this.style.borderColor = 'rgba(255,255,255,0.2)';
+                this.style.background = 'rgba(255,255,255,0.05)';
+            });
+        });
 
-        log('🔧 Initialized file protocol click tests', 'info');
-        log('💡 Browsers typically BLOCK file:// navigation from web pages', 'warning');
-        log('🎯 This is a security feature to protect local files', 'success');
+        // Initial logging
+        log('🔧 Initialized hover-click file protocol tests', 'info');
+        log('💡 Hover over colored zones to trigger automatic file link clicks', 'warning');
+        log('🎯 This tests if file:// URLs can be triggered without direct user clicks', 'critical');
+        log('⚠️ Browsers typically block file:// navigation from web pages for security', 'success');
     </script>
 </body>
 </html>
