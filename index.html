@@ -1,42 +1,38 @@
 <!DOCTYPE html>
 <html>
 <body>
-    <h1>File URL Quartz Integration</h1>
+    <h1>TCC Database Access Tests</h1>
     <script>
-    function testFileQuartzIntegration() {
-        console.log('Testing file:// URL access to Quartz components...');
+    function testTCCAccess() {
+        console.log('Testing TCC database access points...');
         
-        // Try to access Quartz framework files
-        const quartzPaths = [
-            'file:///System/Library/Frameworks/Quartz.framework/',
-            'file:///System/Library/Frameworks/CoreGraphics.framework/',
-            'file:///System/Library/PrivateFrameworks/QuartzCore.framework/',
-            'file:///usr/lib/libQuartzCore.dylib',
-            'file:///System/Library/Frameworks/ApplicationServices.framework/'
+        // Try to access TCC-related files and databases
+        const tccPaths = [
+            'file:///Library/Application%20Support/com.apple.TCC/TCC.db',
+            'file:///Users/' + encodeURIComponent('{{USERNAME}}') + '/Library/Application%20Support/com.apple.TCC/TCC.db',
+            'file:///System/Library/PrivateFrameworks/TCC.framework/',
+            'file:///usr/libexec/tccd'
         ];
         
-        quartzPaths.forEach((path, index) => {
+        tccPaths.forEach(path => {
             setTimeout(() => {
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
                 iframe.src = path;
                 document.body.appendChild(iframe);
-                console.log('Attempted to load:', path);
-            }, index * 500);
+                console.log('Attempted TCC path:', path);
+            }, 500);
         });
         
-        // Try to trigger QuickLook which uses Quartz
+        // Try to trigger TCC reset or bypass
         setTimeout(() => {
-            window.open('file:///Users/Shared/test.txt#ql', '_quicklook');
+            // Attempt to open privacy settings
+            window.open('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility', '_privacy');
+            window.open('x-apple.systempreferences:com.apple.preference.security?Privacy_InputMonitoring', '_input');
         }, 3000);
-        
-        // Try Quartz Composer files
-        setTimeout(() => {
-            window.open('file:///System/Library/Compositions/Sphere.qtz', '_quartzcomposer');
-        }, 4000);
     }
     
-    testFileQuartzIntegration();
+    testTCCAccess();
     </script>
 </body>
 </html>
