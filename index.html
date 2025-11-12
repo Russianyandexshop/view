@@ -1,38 +1,186 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Protocol Auto-Click Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 40px;
+            background: #1a1a2e;
+            color: white;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-area {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .file-link {
+            display: block;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(66, 133, 244, 0.3);
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            border: 1px solid #4285f4;
+        }
+        .file-link:hover {
+            background: rgba(66, 133, 244, 0.5);
+        }
+        .status {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Monaco', monospace;
+            margin: 20px 0;
+            height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #00ff88; }
+        .warning { color: #ffaa00; }
+        .error { color: #ff4444; }
+    </style>
+</head>
 <body>
-    <h1>TCC Database Access Tests</h1>
+    <div class="container">
+        <h1>📁 File Protocol Auto-Click Test</h1>
+        
+        <div class="test-area">
+            <h3>Test File Links</h3>
+            <a href="file:///Users/Shared/" class="file-link">📂 file:///Users/Shared/</a>
+            <a href="file:///Applications/" class="file-link">📂 file:///Applications/</a>
+            <a href="file:///System/Library/CoreServices/" class="file-link">📂 file:///System/Library/CoreServices/</a>
+            <a href="file:///Applications/" class="file-link">🌐 file:///Applications/ (Control)</a>
+            
+            <button onclick="startAutoClicker()">Start Auto-Clicker</button>
+            <button onclick="stopAutoClicker()">Stop Auto-Clicker</button>
+        </div>
+
+        <div class="status" id="status">
+            Status: Testing automated file link clicking...
+        </div>
+    </div>
+
     <script>
-    function testTCCAccess() {
-        console.log('Testing TCC database access points...');
-        
-        // Try to access TCC-related files and databases
-        const tccPaths = [
-            'file:///Library/Application%20Support/com.apple.TCC/TCC.db',
-            'file:///Users/' + encodeURIComponent('{{USERNAME}}') + '/Library/Application%20Support/com.apple.TCC/TCC.db',
-            'file:///System/Library/PrivateFrameworks/TCC.framework/',
-            'file:///usr/libexec/tccd'
-        ];
-        
-        tccPaths.forEach(path => {
-            setTimeout(() => {
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = path;
-                document.body.appendChild(iframe);
-                console.log('Attempted TCC path:', path);
-            }, 500);
+        const statusElement = document.getElementById('status');
+        let autoClickerInterval = null;
+        let clickCount = 0;
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            statusElement.appendChild(entry);
+            statusElement.scrollTop = statusElement.scrollHeight;
+        }
+
+        function startAutoClicker() {
+            if (autoClickerInterval) {
+                log('❌ Auto-clicker already running', 'warning');
+                return;
+            }
+
+            log('🚀 Starting file link auto-clicker...', 'warning');
+            log('⚠️ Will attempt to click file:// links every 5 seconds', 'warning');
+
+            autoClickerInterval = setInterval(() => {
+                clickCount++;
+                log(`🔄 Auto-click attempt #${clickCount}`, 'info');
+                
+                // Strategy 1: Click all file:// links
+                const fileLinks = document.querySelectorAll('a[href^="file://"]');
+                
+                if (fileLinks.length > 0) {
+                    log(`✅ Found ${fileLinks.length} file:// links`, 'success');
+                    
+                    fileLinks.forEach((link, index) => {
+                        setTimeout(() => {
+                            log(`🖱️ Clicking: ${link.href}`, 'warning');
+                            
+                            // Visual feedback
+                            const originalBg = link.style.backgroundColor;
+                            link.style.backgroundColor = '#34a853';
+                            
+                            setTimeout(() => {
+                                try {
+                                    link.click();
+                                    log(`✅ Click dispatched for: ${link.href}`, 'success');
+                                } catch (e) {
+                                    log(`❌ Click failed: ${e.message}`, 'error');
+                                }
+                                link.style.backgroundColor = originalBg;
+                            }, 100);
+                            
+                        }, index * 1000);
+                    });
+                } else {
+                    log('❌ No file:// links found', 'error');
+                }
+                
+                // Strategy 2: Try to create and click file links dynamically
+                if (clickCount % 2 === 0) {
+                    try {
+                        const dynamicLink = document.createElement('a');
+                        dynamicLink.href = 'file:///Users/Shared/';
+                        dynamicLink.textContent = 'Dynamic File Link';
+                        dynamicLink.style.display = 'none';
+                        document.body.appendChild(dynamicLink);
+                        
+                        log('🔄 Trying to click dynamically created file link', 'info');
+                        dynamicLink.click();
+                        document.body.removeChild(dynamicLink);
+                        
+                    } catch (e) {
+                        log(`❌ Dynamic link click failed: ${e.message}`, 'error');
+                    }
+                }
+                
+            }, 5000); // 5 seconds
+
+            log('✅ Auto-clicker started', 'success');
+        }
+
+        function stopAutoClicker() {
+            if (autoClickerInterval) {
+                clearInterval(autoClickerInterval);
+                autoClickerInterval = null;
+                log('🛑 Auto-clicker stopped', 'success');
+            }
+        }
+
+        // Monitor link clicks and navigation attempts
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A' && e.target.href.startsWith('file://')) {
+                log('🎯 File link click intercepted', 'warning');
+                // Browsers will typically block this navigation
+            }
         });
-        
-        // Try to trigger TCC reset or bypass
+
+        // Listen for beforeunload (would trigger if navigation succeeds)
+        window.addEventListener('beforeunload', () => {
+            log('🚨 PAGE NAVIGATION ATTEMPT DETECTED!', 'critical');
+        });
+
+        // Test what happens with regular HTTP links (should work)
         setTimeout(() => {
-            // Attempt to open privacy settings
-            window.open('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility', '_privacy');
-            window.open('x-apple.systempreferences:com.apple.preference.security?Privacy_InputMonitoring', '_input');
+            const httpLink = document.querySelector('a[href="https://google.com"]');
+            if (httpLink) {
+                log('🔗 Testing regular HTTP link click...', 'info');
+                setTimeout(() => {
+                    httpLink.click();
+                    log('✅ HTTP link click should work normally', 'success');
+                }, 2000);
+            }
         }, 3000);
-    }
-    
-    testTCCAccess();
+
+        log('🔧 Initialized file protocol click tests', 'info');
+        log('💡 Browsers typically BLOCK file:// navigation from web pages', 'warning');
+        log('🎯 This is a security feature to protect local files', 'success');
     </script>
 </body>
 </html>
