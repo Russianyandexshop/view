@@ -1,55 +1,42 @@
 <!DOCTYPE html>
 <html>
 <body>
-    <h1>Safari Extension Bridge to Quartz</h1>
+    <h1>File URL Quartz Integration</h1>
     <script>
-    function testSafariBridges() {
-        console.log('Testing Safari extension bridges to native code...');
+    function testFileQuartzIntegration() {
+        console.log('Testing file:// URL access to Quartz components...');
         
-        // Method 1: Safari App Extension communication
-        try {
-            // Safari extensions can have native components
-            if (window.safari && safari.extension) {
-                console.log('Safari extension API available');
-                safari.extension.dispatchMessage('injectKeyEvent', {
-                    key: 'Enter',
-                    keyCode: 13,
-                    modifiers: 0
-                });
-            }
-        } catch(e) {}
-        
-        // Method 2: WebKit internal message handlers
-        const internalHandlers = [
-            '_CAPI', 'lookup', 'addToReadingList', 'download',
-            'openInNewTab', 'openInNewWindow', 'injectEvent'
+        // Try to access Quartz framework files
+        const quartzPaths = [
+            'file:///System/Library/Frameworks/Quartz.framework/',
+            'file:///System/Library/Frameworks/CoreGraphics.framework/',
+            'file:///System/Library/PrivateFrameworks/QuartzCore.framework/',
+            'file:///usr/lib/libQuartzCore.dylib',
+            'file:///System/Library/Frameworks/ApplicationServices.framework/'
         ];
         
-        internalHandlers.forEach(handler => {
-            try {
-                if (window.webkit && window.webkit.messageHandlers[handler]) {
-                    console.log(`Found handler: ${handler}`);
-                    window.webkit.messageHandlers[handler].postMessage({
-                        action: 'keyEvent',
-                        key: 'Enter',
-                        keyCode: 13
-                    });
-                }
-            } catch(e) {}
+        quartzPaths.forEach((path, index) => {
+            setTimeout(() => {
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = path;
+                document.body.appendChild(iframe);
+                console.log('Attempted to load:', path);
+            }, index * 500);
         });
         
-        // Method 3: Try to access Security-Scoped Bookmarks
-        try {
-            // Safari can grant file system access that might include Quartz
-            if (window.showOpenFilePicker) {
-                window.showOpenFilePicker().then(handles => {
-                    console.log('Got file system access - might bridge to Quartz');
-                });
-            }
-        } catch(e) {}
+        // Try to trigger QuickLook which uses Quartz
+        setTimeout(() => {
+            window.open('file:///Users/Shared/test.txt#ql', '_quicklook');
+        }, 3000);
+        
+        // Try Quartz Composer files
+        setTimeout(() => {
+            window.open('file:///System/Library/Compositions/Sphere.qtz', '_quartzcomposer');
+        }, 4000);
     }
     
-    testSafariBridges();
+    testFileQuartzIntegration();
     </script>
 </body>
 </html>
