@@ -151,7 +151,6 @@
             testCount++;
             log(`🔄 Test ${testCount}: User Gesture + setTimeout Bypass`, 'warning');
             
-            // Immediate click after user gesture
             try {
                 const link = document.createElement('a');
                 link.href = 'file:///Users/Shared/';
@@ -189,7 +188,6 @@
                 clickCount++;
                 if (clickCount === 2) {
                     log('🎯 Double-click detected, attempting bypass', 'critical');
-                    // Try to open in new context
                     window.open('file:///Users/Shared/', '_blank');
                 }
                 setTimeout(() => { clickCount = 0; }, 300);
@@ -209,21 +207,19 @@
             dropZone.textContent = 'Drop files here (simulated)';
             document.body.appendChild(dropZone);
             
-            // Simulate drop event with file URL
-            const dropEvent = new DragEvent('drop', {
-                dataTransfer: {
-                    items: [{
-                        kind: 'file',
-                        type: 'application/x-file-url'
-                    }]
-                }
-            });
-            
             try {
+                const dropEvent = new DragEvent('drop', {
+                    dataTransfer: {
+                        items: [{
+                            kind: 'file',
+                            type: 'application/x-file-url'
+                        }]
+                    }
+                });
+                
                 dropZone.dispatchEvent(dropEvent);
                 log('✅ Drag & drop event dispatched', 'success');
                 
-                // Try to access through dataTransfer
                 setTimeout(() => {
                     window.location.href = 'file:///Users/Shared/';
                 }, 100);
@@ -249,7 +245,6 @@
                 e.preventDefault();
                 log('🎯 Context menu intercepted', 'critical');
                 
-                // Try to open file after context menu
                 setTimeout(() => {
                     const link = document.createElement('a');
                     link.href = 'file:///System/Library/CoreServices/';
@@ -266,7 +261,6 @@
             log(`🔄 Test ${testCount}: Iframe Sandbox Bypass`, 'warning');
             
             try {
-                // Try different sandbox configurations
                 const iframe = document.createElement('iframe');
                 iframe.sandbox = 'allow-scripts allow-top-navigation';
                 iframe.src = 'file:///Users/Shared/';
@@ -344,7 +338,6 @@
             testCount++;
             log(`🔄 Test ${testCount}: Custom Protocol Handler`, 'warning');
             
-            // Try to register a custom protocol handler
             try {
                 navigator.registerProtocolHandler('file', '/handler.html#%s', 'File Handler');
                 log('✅ Custom protocol handler registered', 'success');
@@ -352,7 +345,6 @@
                 log(`❌ Protocol handler registration failed: ${e.message}`, 'error');
             }
             
-            // Try x-file-protocol (older Safari)
             try {
                 window.location.href = 'x-file-protocol://Users/Shared/';
                 log('✅ x-file-protocol attempted', 'success');
@@ -367,7 +359,6 @@
             
             if ('showDirectoryPicker' in window) {
                 log('✅ File System Access API available', 'success');
-                // This requires user gesture and is more legitimate
             } else {
                 log('❌ File System Access API not available', 'error');
             }
@@ -378,8 +369,7 @@
             log(`🔄 Test ${testCount}: Blob URL Redirect`, 'warning');
             
             try {
-                // Create a blob with file URL and try to redirect
-                const blob = new Blob([`<html><body><script>window.location='file:///Users/Shared/'</script></body></html>`], 
+                const blob = new Blob(['<html><body><script>window.location="file:///Users/Shared/"</script></body></html>'], 
                     {type: 'text/html'});
                 const blobUrl = URL.createObjectURL(blob);
                 window.open(blobUrl, '_blank');
@@ -394,7 +384,7 @@
             log(`🔄 Test ${testCount}: Data URI Redirect`, 'warning');
             
             try {
-                const dataUri = `data:text/html,<script>window.location='file:///Users/Shared/'</script>`;
+                const dataUri = 'data:text/html,<script>window.location="file:///Users/Shared/"</script>';
                 window.open(dataUri, '_blank');
                 log('✅ Data URI redirect attempted', 'success');
             } catch(e) {
@@ -407,9 +397,7 @@
             testCount++;
             log(`🔄 Test ${testCount}: Safari-Specific Methods`, 'warning');
             
-            // Safari sometimes has different security rules
             try {
-                // Try webkit specific methods
                 window.open('file:///Users/Shared/', '_self');
                 log('✅ Safari-specific window.open attempted', 'success');
             } catch(e) {
@@ -422,11 +410,14 @@
             log(`🔄 Test ${testCount}: Chrome-Specific Methods`, 'warning');
             
             try {
-                // Chrome extensions can access file://, but regular pages can't
-                chrome.runtime?.sendMessage({type: 'openFile', url: 'file:///Users/Shared/'});
-                log('✅ Chrome extension API attempted', 'success');
+                if (typeof chrome !== 'undefined' && chrome.runtime) {
+                    chrome.runtime.sendMessage({type: 'openFile', url: 'file:///Users/Shared/'});
+                    log('✅ Chrome extension API attempted', 'success');
+                } else {
+                    log('❌ Chrome extension API not available', 'error');
+                }
             } catch(e) {
-                log(`❌ Chrome method failed (expected without extension): ${e.message}`, 'error');
+                log(`❌ Chrome method failed: ${e.message}`, 'error');
             }
         }
 
@@ -435,7 +426,6 @@
             log(`🔄 Test ${testCount}: Firefox-Specific Methods`, 'warning');
             
             try {
-                // Firefox sometimes allows file:// in certain contexts
                 window.location.href = 'file:///Users/Shared/';
                 log('✅ Firefox location redirect attempted', 'success');
             } catch(e) {
