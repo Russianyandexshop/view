@@ -77,64 +77,22 @@
             background: rgba(66, 133, 244, 0.8);
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🛡️ Advanced File Protocol Bypass Tests</h1>
-        
-        <div class="test-area">
-            <div class="section">
-                <h3 class="section-title">Method 1: Traditional File Links (Expected to Fail)</h3>
-                <a href="file:///Users/Shared/" class="file-link">📂 file:///Users/Shared/</a>
-                <a href="file:///Applications/" class="file-link">📂 file:///Applications/</a>
-                <a href="file:///System/Library/CoreServices/" class="file-link">📂 file:///System/Library/CoreServices/</a>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Method 2: User Gesture Bypass Attempts</h3>
-                <button onclick="testUserGestureBypass()">Click + setTimeout Bypass</button>
-                <button onclick="testDoubleClickBypass()">Double-Click Handler</button>
-                <button onclick="testDragAndDropBypass()">Drag & Drop Simulation</button>
-                <button onclick="testContextMenuBypass()">Right-Click Context Menu</button>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Method 3: Frame & Window Manipulation</h3>
-                <button onclick="testIframeSandboxBypass()">Iframe Sandbox Bypass</button>
-                <button onclick="testWindowOpenBypass()">window.open with file://</button>
-                <button onclick="testLocationReplaceBypass()">location.replace()</button>
-                <button onclick="testPostMessageBypass()">PostMessage to Iframe</button>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Method 4: Protocol Handler Tricks</h3>
-                <button onclick="testCustomProtocol()">Custom Protocol Handler</button>
-                <button onclick="testFileSystemAPI()">File System Access API</button>
-                <button onclick="testBlobURLs()">Blob URLs with file://</button>
-                <button onclick="testDataURIRedirect()">Data URI Redirect</button>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Method 5: Browser-Specific Exploits</h3>
-                <button onclick="testSafariSpecific()">Safari-Specific Methods</button>
-                <button onclick="testChromeSpecific()">Chrome-Specific Methods</button>
-                <button onclick="testFirefoxSpecific()">Firefox-Specific Methods</button>
-            </div>
-
-            <button onclick="runAllTests()">🚀 Run All Bypass Tests</button>
-            <button onclick="clearLog()">🗑️ Clear Log</button>
-        </div>
-
-        <div class="status" id="status">
-            Status: Ready to test file protocol bypass methods...
-        </div>
-    </div>
 
     <script>
-        const statusElement = document.getElementById('status');
+        // Define all functions first before the body loads
+        let statusElement;
         let testCount = 0;
 
+        function initializeApp() {
+            statusElement = document.getElementById('status');
+            log('🔧 Advanced file protocol bypass tests initialized', 'info');
+            log('💡 These tests attempt various methods to bypass file:// restrictions', 'warning');
+            log('⚠️ Most will fail due to browser security policies', 'success');
+            log('🎯 Look for any methods that succeed - these would be security findings', 'critical');
+        }
+
         function log(message, type = 'info') {
+            if (!statusElement) return;
             const entry = document.createElement('div');
             entry.className = type;
             entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
@@ -143,7 +101,9 @@
         }
 
         function clearLog() {
-            statusElement.innerHTML = 'Status: Log cleared...';
+            if (statusElement) {
+                statusElement.innerHTML = 'Status: Log cleared...';
+            }
         }
 
         // Method 2: User Gesture Bypass Attempts
@@ -465,12 +425,58 @@
                 log(`🛡️ SECURITY BLOCKED: ${e.message}`, 'critical');
             }
         });
-
-        log('🔧 Advanced file protocol bypass tests initialized', 'info');
-        log('💡 These tests attempt various methods to bypass file:// restrictions', 'warning');
-        log('⚠️ Most will fail due to browser security policies', 'success');
-        log('🎯 Look for any methods that succeed - these would be security findings', 'critical');
-
     </script>
+</head>
+<body onload="initializeApp()">
+    <div class="container">
+        <h1>🛡️ Advanced File Protocol Bypass Tests</h1>
+        
+        <div class="test-area">
+            <div class="section">
+                <h3 class="section-title">Method 1: Traditional File Links (Expected to Fail)</h3>
+                <a href="file:///Users/Shared/" class="file-link">📂 file:///Users/Shared/</a>
+                <a href="file:///Applications/" class="file-link">📂 file:///Applications/</a>
+                <a href="file:///System/Library/CoreServices/" class="file-link">📂 file:///System/Library/CoreServices/</a>
+            </div>
+
+            <div class="section">
+                <h3 class="section-title">Method 2: User Gesture Bypass Attempts</h3>
+                <button onclick="testUserGestureBypass()">Click + setTimeout Bypass</button>
+                <button onclick="testDoubleClickBypass()">Double-Click Handler</button>
+                <button onclick="testDragAndDropBypass()">Drag & Drop Simulation</button>
+                <button onclick="testContextMenuBypass()">Right-Click Context Menu</button>
+            </div>
+
+            <div class="section">
+                <h3 class="section-title">Method 3: Frame & Window Manipulation</h3>
+                <button onclick="testIframeSandboxBypass()">Iframe Sandbox Bypass</button>
+                <button onclick="testWindowOpenBypass()">window.open with file://</button>
+                <button onclick="testLocationReplaceBypass()">location.replace()</button>
+                <button onclick="testPostMessageBypass()">PostMessage to Iframe</button>
+            </div>
+
+            <div class="section">
+                <h3 class="section-title">Method 4: Protocol Handler Tricks</h3>
+                <button onclick="testCustomProtocol()">Custom Protocol Handler</button>
+                <button onclick="testFileSystemAPI()">File System Access API</button>
+                <button onclick="testBlobURLs()">Blob URLs with file://</button>
+                <button onclick="testDataURIRedirect()">Data URI Redirect</button>
+            </div>
+
+            <div class="section">
+                <h3 class="section-title">Method 5: Browser-Specific Exploits</h3>
+                <button onclick="testSafariSpecific()">Safari-Specific Methods</button>
+                <button onclick="testChromeSpecific()">Chrome-Specific Methods</button>
+                <button onclick="testFirefoxSpecific()">Firefox-Specific Methods</button>
+            </div>
+
+            <button onclick="runAllTests()">🚀 Run All Bypass Tests</button>
+            <button onclick="clearLog()">🗑️ Clear Log</button>
+        </div>
+
+        <div class="status" id="status">
+            Status: Ready to test file protocol bypass methods...
+        </div>
+    </div>
 </body>
 </html>
