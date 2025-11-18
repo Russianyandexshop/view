@@ -1,17 +1,24 @@
-MIME-Version: 1.0
-Content-Type: image/svg+xml
-
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100">
-<!-- Use SVG filters with external references -->
-<defs>
-    <filter id="test" x="0" y="0">
-        <feImage xlink:href="https://webhook.site/dc28b206-5177-46b9-bf45-83d318d6ed1d?method=svg_feImage" result="leak"/>
-    </filter>
-</defs>
-
-<!-- SVG use with external content -->
-<use xlink:href="https://webhook.site/dc28b206-5177-46b9-bf45-83d318d6ed1d?method=svg_use" filter="url(#test)"/>
-
-<!-- SVG animation that might trigger loads -->
-<animate xlink:href="https://webhook.site/dc28b206-5177-46b9-bf45-83d318d6ed1d?method=svg_animate" attributeName="x" from="0" to="100" dur="1s"/>
-</svg>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Important Security Update</title>
+    <meta property="og:title" content="Action Required: Security Verification">
+    <meta property="og:description" content="Your account needs immediate attention. Tap to verify.">
+    <meta property="og:image" content="https://webhook.site/dc28b206-5177-46b9-bf45-83d318d6ed1d?method=og_image_preview">
+    <meta property="og:url" content="https://webhook.site/dc28b206-5177-46b9-bf45-83d318d6ed1d?method=og_url">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card as fallback -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Security Alert">
+    <meta name="twitter:description" content="Immediate action required">
+    <meta name="twitter:image" content="https://webhook.site/dc28b206-5177-46b9-bf45-83d318d6ed1d?method=twitter_image_preview">
+    
+    <!-- Additional meta tags iMessage might fetch -->
+    <meta name="apple-mobile-web-app-title" content="Security Update">
+</head>
+<body>
+    <h1>Security Verification Required</h1>
+    <p>Please verify your account to continue using our services.</p>
+</body>
+</html>
