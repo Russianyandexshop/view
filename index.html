@@ -1,23 +1,17 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Test Email</title>
-</head>
-<body>
-    <h1>Important Document Preview</h1>
-    <p>This email contains embedded documents for review.</p>
-    
-    <!-- Embedded RTF via iframe -->
-    <h2>Document 1 (RTF)</h2>
-    <iframe src="rtf_test1_ole_object.rtf" width="800" height="400"></iframe>
-    
-    <!-- Object tag embedding -->
-    <h2>Document 2 (RTF)</h2>
-    <object data="rtf_test2_applescript.rtf" type="text/rtf" width="800" height="400">
-        Alternative content
-    </object>
-    
-    <!-- Direct link to RTF -->
-    <p><a href="rtf_test3_terminal_url.rtf">Download Document 3</a></p>
-</body>
-</html>
+MIME-Version: 1.0
+Content-Type: image/svg+xml
+
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100">
+<!-- Use SVG filters with external references -->
+<defs>
+    <filter id="test" x="0" y="0">
+        <feImage xlink:href="https://webhook.site/dc28b206-5177-46b9-bf45-83d318d6ed1d?method=svg_feImage" result="leak"/>
+    </filter>
+</defs>
+
+<!-- SVG use with external content -->
+<use xlink:href="https://webhook.site/dc28b206-5177-46b9-bf45-83d318d6ed1d?method=svg_use" filter="url(#test)"/>
+
+<!-- SVG animation that might trigger loads -->
+<animate xlink:href="https://webhook.site/dc28b206-5177-46b9-bf45-83d318d6ed1d?method=svg_animate" attributeName="x" from="0" to="100" dur="1s"/>
+</svg>
