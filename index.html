@@ -1,47 +1,20 @@
-<!-- Create a test server to serve files -->
 <!DOCTYPE html>
 <html>
+<head>
+  <title>Android Intent Auto Launch PoC</title>
+</head>
 <body>
-<h1>Download Path Test</h1>
-<button onclick="testDownload()">Test Download Path</button>
-<button onclick="testSaveFilePicker()">Test File Picker</button>
-<script>
-async function testDownload() {
-  const responses = [
-    'attachment; filename="../../etc/passwd"',
-    'attachment; filename="normal.txt"',
-    'attachment; filename="CON.txt"',
-    ''
-  ];
-  
-  for (const cd of responses) {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/set-header';
-    form.innerHTML = `
-      <input type="hidden" name="header" value="${cd}">
-      <input type="hidden" name="content" value="test">
-    `;
-    document.body.appendChild(form);
-    form.submit();
-    form.remove();
-    await new Promise(r => setTimeout(r, 1000));
-  }
-}
+  <h1>Android Intent Auto Launch Test</h1>
+  <p>If an app opens automatically, this is a security issue.</p>
 
-function testSaveFilePicker() {
-  if ('showSaveFilePicker' in window) {
-    window.showSaveFilePicker({
-      suggestedName: '../../../test.txt',
-      types: [{
-        description: 'Text files',
-        accept: {'text/plain': ['.txt']},
-      }],
-    }).then(handle => {
-      console.log('Got handle:', handle);
-    }).catch(e => console.log('Error:', e));
-  }
-}
-</script>
+  <script>
+    // Example: SMS app
+    window.location.href = "sms:12345?body=PoC";
+
+    // Alternative examples (test one at a time):
+    // window.location.href = "tel:12345";
+    // window.location.href = "intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;end";
+    // window.location.href = "intent://#Intent;component=com.android.messaging/.ui.conversationlist.ConversationListActivity;end";
+  </script>
 </body>
 </html>
