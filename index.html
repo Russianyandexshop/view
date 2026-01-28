@@ -1,82 +1,14 @@
-<!DOCTYPE html>
-<html>
-<body>
-    <h2>Calculator Launch Tests</h2>
-    <button onclick="runAllTests()">Run Tests</button>
-    <div id="results"></div>
+<script>
+// Test if it shows a prompt or auto-opens
+function testAutoOpen() {
+    console.log('Testing auto-open in 3 seconds...');
     
-    <script>
-        const results = [];
-        const tests = [
-            // macOS tests
-            {name: 'file:// direct', run: () => location.href = 'file:///Applications/Calculator.app'},
-            {name: 'file:// with open', run: () => location.href = 'file:///open?/Applications/Calculator.app'},
-            {name: 'x-man-page', run: () => location.href = 'x-man-page://calculator'},
-            {name: 'terminal open', run: () => location.href = 'terminal://open?command=open%20/Applications/Calculator.app'},
-            
-            // Windows tests
-            {name: 'ms-calculator://', run: () => location.href = 'ms-calculator://'},
-            {name: 'calc://', run: () => location.href = 'calc://'},
-            {name: 'file:// Windows', run: () => location.href = 'file:///C:/Windows/System32/calc.exe'},
-            
-            // Linux tests  
-            {name: 'gnome-calculator', run: () => location.href = 'gnome-calculator://'},
-            
-            // Generic
-            {name: 'calculator://', run: () => location.href = 'calculator://'},
-            {name: 'app://calculator', run: () => location.href = 'app://calculator'},
-            
-            // Iframe methods
-            {name: 'Iframe file://', run: () => {
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = 'file:///Applications/Calculator.app';
-                document.body.appendChild(iframe);
-            }},
-            
-            // Form method
-            {name: 'Form submit', run: () => {
-                const form = document.createElement('form');
-                form.action = 'file:///Applications/Calculator.app';
-                form.submit();
-            }},
-            
-            // Meta refresh
-            {name: 'Meta refresh', run: () => {
-                const meta = document.createElement('meta');
-                meta.httpEquiv = 'refresh';
-                meta.content = '0; url=file:///Applications/Calculator.app';
-                document.head.appendChild(meta);
-            }}
-        ];
-        
-        function runAllTests() {
-            results.length = 0;
-            document.getElementById('results').innerHTML = '';
-            
-            tests.forEach((test, i) => {
-                setTimeout(() => {
-                    const result = {test: test.name, status: 'attempting'};
-                    
-                    try {
-                        console.log(`Testing: ${test.name}`);
-                        test.run();
-                        result.status = 'executed - check if calculator opened';
-                    } catch(e) {
-                        result.status = `error: ${e.message}`;
-                    }
-                    
-                    results.push(result);
-                    
-                    // Update display
-                    const html = results.map(r => 
-                        `<div><strong>${r.test}:</strong> ${r.status}</div>`
-                    ).join('');
-                    document.getElementById('results').innerHTML = html;
-                    
-                }, i * 2000); // 2 second intervals
-            });
-        }
-    </script>
-</body>
-</html>
+    setTimeout(() => {
+        console.log('Attempting calc:// without user gesture...');
+        window.location.href = 'calc://';
+    }, 1000);
+}
+
+// Run test
+testAutoOpen();
+</script>
