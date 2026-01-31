@@ -3,7 +3,7 @@
 // Test various XSS vectors
 var vectors = [
   "https://m.youtube.com/results?search_query=<script>alert(1)</script>",
-  "https://m.youtube.com/watch?v=test&param='\"><img src=x onerror=alert(1)>",
+  "https://m.youtube.com/watch?v=test&param='\"><img src=x onerror=alert(document.domain)>",
   "https://m.youtube.com/#<svg onload=alert(1)>"
 ];
 
